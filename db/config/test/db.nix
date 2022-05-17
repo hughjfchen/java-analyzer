@@ -1,5 +1,5 @@
-{ pkgs }:
-let inherit pkgs;
+{ pkgs, lib, config, ... }:
+let inherit pkgs lib config;
 in {
   "host" = "testdb";
   "port" = 5432;

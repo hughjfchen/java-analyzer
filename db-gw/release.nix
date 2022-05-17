@@ -16,13 +16,12 @@ let
   lib = nPkgs.lib; # lib functions from the native package set
 
   # dependent config
-  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } //
-                                                                                          { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
+  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
   };
 
   # my services dependencies
   # following define the service
-  my-postgrest-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } // {inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config;}; };
+  my-postgrest-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = {inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config;}; };
   my-postgrest-config-kv = nPkgs.writeTextFile {
     name = "my-postgrest-config";
     # generate the key = value format config, refer to the lib.generators for other formats

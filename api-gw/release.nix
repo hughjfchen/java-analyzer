@@ -15,16 +15,13 @@ let
   sPkgs = pkgs.x86-musl64; # for the fully static build
   lib = nPkgs.lib; # lib functions from the native package set
 
+  common-config = { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
   # dependent config
-  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } //
-                                                                                         { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
-  };
+  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config; };
 
-  my-postgrest-config = import ../db-gw/config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } //
-                                                                                          { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config;};
-  };
+  my-postgrest-config = import ../db-gw/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config;};};
 
-  my-openresty-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } // {inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config my-postgrest-config;}; };
+  my-openresty-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config my-postgrest-config;}; };
 
   my-frontend-distributable = import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; };
 
@@ -115,7 +112,7 @@ let
       imports = [ my-openresty-service ];
     })).config.systemd.units."my-openresty.service".text;
 in {
-  inherit nativePkgs pkgs my-openresty-config;
+  inherit nativePkgs pkgs my-db-config my-postgrest-config my-openresty-config;
 
   mk-my-openresty-service-systemd-setup-or-bin-sh = if genSystemdUnit then
     (nPkgs.setupSystemdUnits {

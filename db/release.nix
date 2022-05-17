@@ -16,7 +16,7 @@ let
   lib = nPkgs.lib; # lib functions from the native package set
 
   # the config
-  my-db-config = import ./config/${releasePhase}/${releaseHost} { pkgs = nPkgs // { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};};
+  my-db-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};};
   
   # my services dependencies
   # following define the service

@@ -1,3 +1,3 @@
-{ pkgs }:
-let inherit pkgs;
-in { "docRoot" = "/var/${pkgs.userName}/openresty/nginx/web"; }
+{ pkgs, lib, config, ... }:
+let inherit pkgs lib config;
+in { "docRoot" = "/var/${config.userName}/openresty/nginx/web"; }
