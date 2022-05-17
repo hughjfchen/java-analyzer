@@ -32,7 +32,7 @@ let
       cp -R $src/sql/api $out/
       cp -R $src/sql/authorization $out/
       cp -R $src/sql/sample_data $out/
-      sed "s/\$DB_ANON_ROLE/${my-db-config.db.anonymousRole}/g; s/\$DB_USER/${my-db-config.db.user}/g; s/\$DB_PASS/${my-db-config.db.password}/g; s/\$JWT_SECRET/${my-db-config.db.jwtSecret}/g" $src/sql/init.sql > $out/init.sql
+      sed "s/\$DB_ANON_ROLE/${my-db-config.db.anonymousRole}/g; s/\$DB_USER/${my-db-config.db.user}/g; s/\$DB_PASS/${my-db-config.db.password}/g; s/\$DB_NAME/${my-db-config.db.database}/g; s/\$JWT_SECRET/${my-db-config.db.jwtSecret}/g" $src/sql/init.sql > $out/init.sql
     '';
   };
   mk-my-postgresql-service-unit = (nPkgs.nixos ({ lib, pkgs, config, ... }: {

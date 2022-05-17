@@ -1,6 +1,6 @@
-drop database if exists $MY_DB_NAME;
-create database $MY_DB_NAME;
-\c $MY_DB_NAME
+drop database if exists $DB_NAME;
+create database $DB_NAME;
+\c $DB_NAME
 
 -- some setting to make the output less verbose
 \set QUIET on
