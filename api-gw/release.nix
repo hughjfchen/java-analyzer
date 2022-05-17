@@ -34,11 +34,13 @@ let
     dontUnpack = true;
     installPhase = ''
       mkdir -p $out
-      cp -R $src/openresty/lua $out/
-      cp -R $src/openresty/nginx $out/
+      mkdir -p $out/lua
+      mkdir -p $out/nginx
+      mkdir -p $out/nginx/conf
       mkdir -p $out/nginx/web
-      cp -R ${my-frontend-distributable}/* $out/nginx/web
       mkdir -p $out/lualib
+      cp -R $src/openresty/lua/* $out/lua/
+      cp -R $src/openresty/nginx/conf/* $out/nginx/conf/
       ln -s $out/lua $out/lualib/user_code
       ln -s $out/lualib $out/nginx/lualib
     '';
@@ -55,16 +57,20 @@ let
       [ ! -d /var/${userName}/openresty/nginx/logs ] && mkdir -p /var/${userName}/openresty/nginx/logs && chown -R ${userName}:${userName} /var/${userName}/openresty/nginx/logs
       [ ! -d /var/${userName}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${userName}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/dumpfiles
       [ ! -d /var/${userName}/openresty/nginx/web/parsereports ] && mkdir -p /var/${userName}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/parsereports
-      echo "export DB_HOST=${my-db-config.db.host}" > /var/${userName}/openresty/env.export
-      echo "export DB_PORT=${toString my-db-config.db.port}" >> /var/${userName}/openresty/env.export
-      echo "export DB_USER=${my-db-config.db.user}" >> /var/${userName}/openresty/env.export
-      echo "export DB_PASS=${my-db-config.db.password}" >> /var/${userName}/openresty/env.export
-      echo "export DB_NAME=${my-db-config.db.database}" >> /var/${userName}/openresty/env.export
-      echo "export DB_SCHEMA=${my-db-config.db.schema}" >> /var/${userName}/openresty/env.export
-      echo "export JWT_SECRET=${my-db-config.db.jwtSecret}" >> /var/${userName}/openresty/env.export
-      echo "export POSTGREST_HOST=${my-postgrest-config.postgrest.server-host}" >> /var/${userName}/openresty/env.export
-      echo "export POSTGREST_PORT=${toString my-postgrest-config.postgrest.server-port}" >> /var/${userName}/openresty/env.export
-      echo "export OPENRESTY_DOC_ROOT=${my-openresty-config.openresty.docRoot}" >> /var/${userName}/openresty/env.export
+      if [ ! -f /var/${userName}/openresty/env.export ]; then
+         echo "export DB_HOST=${my-db-config.db.host}" > /var/${userName}/openresty/env.export
+         {
+            echo "export DB_PORT=${toString my-db-config.db.port}"
+            echo "export DB_USER=${my-db-config.db.user}"
+            echo "export DB_PASS=${my-db-config.db.password}"
+            echo "export DB_NAME=${my-db-config.db.database}"
+            echo "export DB_SCHEMA=${my-db-config.db.schema}"
+            echo "export JWT_SECRET=${my-db-config.db.jwtSecret}"
+            echo "export POSTGREST_HOST=${my-postgrest-config.postgrest.server-host}"
+            echo "export POSTGREST_PORT=${toString my-postgrest-config.postgrest.server-port}"
+            echo "export OPENRESTY_DOC_ROOT=${my-openresty-config.openresty.docRoot}"
+         }  >> /var/${userName}/openresty/env.export
+      fi
       # shellcheck source=/dev/null
       . /var/${userName}/openresty/env.export
       openresty -p "/var/${userName}/openresty/nginx" -c "/var/${userName}/openresty/nginx/conf/nginx.conf" "$@"

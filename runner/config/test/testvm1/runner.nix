@@ -3,7 +3,7 @@ let inherit pkgs lib config;
 in {
   "command" = "Start";
   "database.host" = "${config.my-db-config.db.host}";
-  "database.port" = "${config.my-db-config.db.port}";
+  "database.port" = "${toString config.my-db-config.db.port}";
   "database.user" = "${config.my-db-config.db.user}";
   "database.password" = "${config.my-db-config.db.password}";
   "database.database" = "${config.my-db-config.db.database}";

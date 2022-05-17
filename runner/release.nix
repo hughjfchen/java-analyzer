@@ -105,13 +105,13 @@ let
   # the config
   # dependent config
   common-config = {inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
-  my-db-config = import ../db/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config;
+  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config;
   };
 
   java-analyzer-runner-config = nPkgs.writeTextFile {
     name = "java-analyzer-runner-config";
     # generate the key = value format config, refer to the lib.generators for other formats
-    text = (lib.generators.toKeyValue {}) (import ./config/${releasePhase}/${releaseHost} { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config my-eclipse-mat-with-dtfj my-jca; }; });
+    text = (lib.generators.toKeyValue {}) (import ./config/${releasePhase}/${releaseHost} { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config my-eclipse-mat-with-dtfj my-jca; }; }).runner;
   };
   java-analyzer-runner-bin-sh-paths = [
     # list the runtime dependencies, especially those cannot be determined by nix automatically
