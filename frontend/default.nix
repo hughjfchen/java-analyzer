@@ -31,7 +31,7 @@ in rec {
     dontUnpack = true;
     installPhase = ''
       mkdir -p $out
-      cp -R $src/build $out/
+      cp -R $src/build/* $out/
     '';
   };
 

@@ -20,14 +20,13 @@ let
   my-frontend-build = (import ./default.nix { }).java-analyzer-frontend;
   # my services dependencies
   # following define the service
-  my-frontend-distributable = nPkgs.stdenv.runCommand {
-    buildCommand = ''
+  my-frontend-distributable = nPkgs.runCommand "my-frontend-distributable" {} ''
       mkdir -p $out
-      for THEFILE in ${my-frontend-build}/* do
-        sed "s/www.detachmentsoft.top/${my-frontend-config.frontend.backendServer}/g" $THEFILE > $out/$(basename $THEFILE)
+      cp -R ${my-frontend-build}/* $out/
+      for THEFILE in $(grep -R '${my-frontend-config.frontend.currentServer}' $out|awk -F':' '{print $1}') do
+        sed -i 's/${my-frontend-config.frontend.currentServer}/${my-frontend-config.frontend.backendServer}/g' $THEFILE
       done
     '';
-  };
 in {
   inherit nativePkgs pkgs my-frontend-distributable;
 }

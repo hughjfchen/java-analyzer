@@ -25,7 +25,7 @@ let
   my-postgrest-config-kv = nPkgs.writeTextFile {
     name = "my-postgrest-config";
     # generate the key = value format config, refer to the lib.generators for other formats
-    text = (lib.generators.toKeyValue {}) my-postgrest-config;
+    text = (lib.generators.toKeyValue {}) my-postgrest-config.postgrest;
   };
 
   # my services dependencies

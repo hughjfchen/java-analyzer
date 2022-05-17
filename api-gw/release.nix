@@ -23,7 +23,7 @@ let
 
   my-openresty-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config my-postgrest-config;}; };
 
-  my-frontend-distributable = import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; };
+  my-frontend-distributable = (import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; }).my-frontend-distributable;
 
   # my services dependencies
   # following define the service
@@ -56,14 +56,14 @@ let
       [ ! -d /var/${userName}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${userName}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/dumpfiles
       [ ! -d /var/${userName}/openresty/nginx/web/parsereports ] && mkdir -p /var/${userName}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/parsereports
       echo "export DB_HOST=${my-db-config.db.host}" > /var/${userName}/openresty/env.export
-      echo "export DB_PORT=${my-db-config.db.port}" >> /var/${userName}/openresty/env.export
+      echo "export DB_PORT=${toString my-db-config.db.port}" >> /var/${userName}/openresty/env.export
       echo "export DB_USER=${my-db-config.db.user}" >> /var/${userName}/openresty/env.export
       echo "export DB_PASS=${my-db-config.db.password}" >> /var/${userName}/openresty/env.export
       echo "export DB_NAME=${my-db-config.db.database}" >> /var/${userName}/openresty/env.export
       echo "export DB_SCHEMA=${my-db-config.db.schema}" >> /var/${userName}/openresty/env.export
       echo "export JWT_SECRET=${my-db-config.db.jwtSecret}" >> /var/${userName}/openresty/env.export
-      echo "export POSTGREST_HOST=${my-postgrest-config.postgrest.db-host}" >> /var/${userName}/openresty/env.export
-      echo "export POSTGREST_PORT=${my-postgrest-config.postgrest.db-port}" >> /var/${userName}/openresty/env.export
+      echo "export POSTGREST_HOST=${my-postgrest-config.postgrest.server-host}" >> /var/${userName}/openresty/env.export
+      echo "export POSTGREST_PORT=${toString my-postgrest-config.postgrest.server-port}" >> /var/${userName}/openresty/env.export
       echo "export OPENRESTY_DOC_ROOT=${my-openresty-config.openresty.docRoot}" >> /var/${userName}/openresty/env.export
       # shellcheck source=/dev/null
       . /var/${userName}/openresty/env.export
