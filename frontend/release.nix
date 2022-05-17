@@ -15,7 +15,8 @@ let
   sPkgs = pkgs.x86-musl64; # for the fully static build
   lib = nPkgs.lib; # lib functions from the native package set
 
-  my-frontend-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; };
+  common-config = { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; };
+  my-frontend-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config; };
   my-frontend-build = (import ./default.nix { }).java-analyzer-frontend;
   # my services dependencies
   # following define the service

@@ -1,1 +1,3 @@
-{ pkgs }: let inherit pkgs; in { "backendServer" = "testvm1"; }
+{ pkgs, lib, config, ... }:
+let inherit pkgs lib config;
+in { "backendServer" = "testvm1"; }

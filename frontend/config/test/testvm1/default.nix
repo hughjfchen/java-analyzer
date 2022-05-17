@@ -1,10 +1,12 @@
-{ pkgs }:
-with pkgs.lib;
+{ pkgs, lib, config, ... }:
 let
-  upPkgs = import ../default.nix { inherit pkgs; };
-  mergePkgs = recursiveUpdate pkgs upPkgs;
-in recursiveUpdate mergePkgs (mapAttrs' (attr: _: {
-  name = removeSuffix ".nix" attr;
-  value = import (./. + "/${attr}") { pkgs = mergePkgs; };
-}) (filterAttrs (fname: type: type == "regular" && fname != "default.nix")
+  upConfig = import ../default.nix { inherit pkgs lib config; };
+  mergeConfig = lib.recursiveUpdate config upConfig;
+in lib.recursiveUpdate mergeConfig (lib.mapAttrs' (attr: _: {
+  name = lib.removeSuffix ".nix" attr;
+  value = import (./. + "/${attr}") {
+    inherit pkgs lib;
+    config = mergeConfig;
+  };
+}) (lib.filterAttrs (fname: type: type == "regular" && fname != "default.nix")
   (builtins.readDir ./.)))
