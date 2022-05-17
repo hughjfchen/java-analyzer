@@ -16,16 +16,15 @@ let
   lib = nPkgs.lib; # lib functions from the native package set
 
   # dependent config
-  my-db-config = (import ../db/release.nix {
-    inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;
-  }).my-db-config;
+  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } //
+                                                                                         { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
+  };
 
-  my-postgrest-config = (import ../db-gw/release.nix {
-    inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget
-      my-db-config;
-  }).my-postgrest-config;
+  my-postgrest-config = import ../db-gw/config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } //
+                                                                                          { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config;};
+  };
 
-  my-openresty-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs // {inherit my-db-config;} // {inherit my-postgrest-config;}; };
+  my-openresty-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = { lib = nPkgs.lib; } // {inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config my-postgrest-config;}; };
 
   my-frontend-distributable = import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; };
 
