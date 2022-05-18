@@ -115,11 +115,11 @@ while true do
 	elseif res[1] == "Content-Type" then
             local upload_file_type = check_upload_type(res[2])
             if not upload_file_type then
-                 ngx.say(cjson.encode({code=501, msg='cloud not determine the upload file type. It must be txt, jar, zip, hprof or phd.', data=res}))
+                 ngx.say(cjson.encode({code=501, msg='cloud not determine the upload file type. It must be txt, threaddump, log, jar, zip, hprof or phd.', data=res}))
                  return
             end
             if not in_array(upload_file_type, conf.allow_exts) then
-           	ngx.say(cjson.encode({code=501, msg='upload file type not supported with current content-type, it must be txt, jar, zip, hprof or phd.', data=res}))
+           	ngx.say(cjson.encode({code=501, msg='upload file type not supported with current content-type, it must be txt, threadump, log, jar, zip, hprof or phd.', data=res}))
            	return
             end
         end
