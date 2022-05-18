@@ -9,7 +9,7 @@ if not form then
 end
 
 form:set_timeout(5 * 60 * 1000)
-local conf = {max_size=1000 * 1000000, allow_exts={'txt', 'phd', 'hprof', 'zip', 'jar'}}
+local conf = {max_size=1000 * 1000000, allow_exts={'txt', 'threaddump', 'log', 'phd', 'hprof', 'zip', 'jar'}}
 
 local my_my_doc_root = ngx.var.my_doc_root
 local function get_upload_home(dRoot)
@@ -85,12 +85,12 @@ while true do
 	    if upload_file_name then  -- multipart the file part
 		local extension = get_ext(res[2])
             	if not extension then
-                 	ngx.say(cjson.encode({code=501, msg='ext not found, it must be txt, jar, zip, hprof or phd.', data=res}))
+                 	ngx.say(cjson.encode({code=501, msg='ext not found, it must be txt, threaddump, log, jar, zip, hprof or phd.', data=res}))
                  	return
             	end
 
             	if not in_array(extension, conf.allow_exts) then
-                	ngx.say(cjson.encode({code=501, msg='upload file type not supported, it must be txt, jar, zip, hprof or phd.', data=res}))
+                	ngx.say(cjson.encode({code=501, msg='upload file type not supported, it must be txt, threaddump, log, jar, zip, hprof or phd.', data=res}))
                 	return
             	end
 
