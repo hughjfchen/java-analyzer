@@ -58,17 +58,17 @@ let
       [ ! -d /var/${userName}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${userName}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/dumpfiles
       [ ! -d /var/${userName}/openresty/nginx/web/parsereports ] && mkdir -p /var/${userName}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/parsereports
       if [ ! -f /var/${userName}/openresty/env.export ]; then
-         echo "export DB_HOST=${my-db-config.db.host}" > /var/${userName}/openresty/env.export
+         echo 'export DB_HOST=${my-db-config.db.host}' > /var/${userName}/openresty/env.export
          {
-            echo "export DB_PORT=${toString my-db-config.db.port}"
-            echo "export DB_USER=${my-db-config.db.user}"
-            echo "export DB_PASS=${my-db-config.db.password}"
-            echo "export DB_NAME=${my-db-config.db.database}"
-            echo "export DB_SCHEMA=${my-db-config.db.schema}"
-            echo "export JWT_SECRET=${my-db-config.db.jwtSecret}"
-            echo "export POSTGREST_HOST=${my-postgrest-config.postgrest.server-host}"
-            echo "export POSTGREST_PORT=${toString my-postgrest-config.postgrest.server-port}"
-            echo "export OPENRESTY_DOC_ROOT=${my-openresty-config.openresty.docRoot}"
+            echo 'export DB_PORT=${toString my-db-config.db.port}'
+            echo 'export DB_USER=${my-db-config.db.user}'
+            echo 'export DB_PASS=${my-db-config.db.password}'
+            echo 'export DB_NAME=${my-db-config.db.database}'
+            echo 'export DB_SCHEMA=${my-db-config.db.schema}'
+            echo 'export JWT_SECRET=${my-db-config.db.jwtSecret}'
+            echo 'export POSTGREST_HOST=${my-postgrest-config.postgrest.server-host}'
+            echo 'export POSTGREST_PORT=${toString my-postgrest-config.postgrest.server-port}'
+            echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.openresty.docRoot}'
          }  >> /var/${userName}/openresty/env.export
       fi
       # shellcheck source=/dev/null

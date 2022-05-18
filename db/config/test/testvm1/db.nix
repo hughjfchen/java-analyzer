@@ -5,7 +5,7 @@ in {
   "port" = 5432;
   "user" = "jadbuser";
   "password" = "jadbuserpass";
-  "schema" = "jadbschema";
+  "schema" = "api";
   "database" = "jadb";
   "anonymousRole" = "anonymous";
   "jwtSecret" = "reallyreallyreallyreallyverysafe";
