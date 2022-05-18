@@ -1,28 +1,24 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | This module implement the type Capability.ReportPreProcessor for the app
-module AppCapability.ReportPreProcessor (
-  preProcessJavaCoreReport,
-  preProcessHeapDumpReport,
-) where
-
-import As
-import Error
-import Has
-
-import Core.JavaAnalyzerRunner
-import Core.Types
-
-import Capability.ReportPreProcessor
+module AppCapability.ReportPreProcessor
+  ( preProcessJavaCoreReport,
+    preProcessHeapDumpReport,
+  )
+where
 
 import AppError
 import AppM
-
+import As
+import Capability.ReportPreProcessor
 import Control.Monad.Catch
+import Core.JavaAnalyzerRunner
+import Core.Types
+import Error
+import Has
 import Path
 import Path.IO
 import System.Process.Typed
-
 import Utils
 
 unCompressDump ::
@@ -55,12 +51,12 @@ gcExtP f =
       || isWASGCLog fname
 
 preProcessDump' ::
-  ( WithError err m
-  , As err AppError
-  , MonadThrow m
-  , MonadIO m
-  , MonadReader env m
-  , Has OutputPath' env
+  ( WithError err m,
+    As err AppError,
+    MonadThrow m,
+    MonadIO m,
+    MonadReader env m,
+    Has OutputPath' env
   ) =>
   Path Rel File ->
   Path Rel Dir ->
@@ -71,15 +67,17 @@ preProcessDump' ::
 preProcessDump' _ dirSuffix rawFile getOrigHomeFn filterFileP = do
   processedAbsHome <- grab @OutputPath' >>= \p -> someDirToAbs $ appendDirToSomeDir (getOrigHomeFn p) dirSuffix
   unCompressDump processedAbsHome rawFile
+  -- clean up the file(s) generated from the previous step to save disk space
+  removeDirRecur $ parent rawFile
   findOneFileInDir processedAbsHome filterFileP
 
 preProcessJavaCoreDump ::
-  ( WithError err m
-  , As err AppError
-  , MonadThrow m
-  , MonadIO m
-  , MonadReader env m
-  , Has OutputPath' env
+  ( WithError err m,
+    As err AppError,
+    MonadThrow m,
+    MonadIO m,
+    MonadReader env m,
+    Has OutputPath' env
   ) =>
   Path Rel File ->
   Path Rel Dir ->
@@ -93,12 +91,12 @@ preProcessJavaCoreDump _ _ rawFile ".threaddump" = pure rawFile
 preProcessJavaCoreDump _ _ _ ext = throwError $ as $ NoSupportedDumpFile $ "The upload file is not supported. It must be zip, jar, txt or threaddump but it is " <> toText ext <> "."
 
 preProcessHeapDumpDump ::
-  ( WithError err m
-  , As err AppError
-  , MonadThrow m
-  , MonadIO m
-  , MonadReader env m
-  , Has OutputPath' env
+  ( WithError err m,
+    As err AppError,
+    MonadThrow m,
+    MonadIO m,
+    MonadReader env m,
+    Has OutputPath' env
   ) =>
   Path Rel File ->
   Path Rel Dir ->
@@ -112,12 +110,12 @@ preProcessHeapDumpDump _ _ rawFile ".hprof" = pure rawFile
 preProcessHeapDumpDump _ _ _ ext = throwError $ as $ NoSupportedDumpFile $ "The upload file is not supported. It must be zip, jar, phd or hprof but it is " <> toText ext <> "."
 
 preProcessGCDump ::
-  ( WithError err m
-  , As err AppError
-  , MonadThrow m
-  , MonadIO m
-  , MonadReader env m
-  , Has OutputPath' env
+  ( WithError err m,
+    As err AppError,
+    MonadThrow m,
+    MonadIO m,
+    MonadReader env m,
+    Has OutputPath' env
   ) =>
   Path Rel File ->
   Path Rel Dir ->

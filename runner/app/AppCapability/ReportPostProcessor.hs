@@ -1,24 +1,20 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | This module implement the type Capability.ReportPostProcessor for the app
-module AppCapability.ReportPostProcessor (
-  postProcessJavaCoreReport,
-  postProcessHeapDumpReport,
-) where
-
-import Has
-
-import Core.JavaAnalyzerRunner
-import Core.Types
-
-import Capability.ReportPostProcessor
+module AppCapability.ReportPostProcessor
+  ( postProcessJavaCoreReport,
+    postProcessHeapDumpReport,
+  )
+where
 
 import AppM
-
+import Capability.ReportPostProcessor
+import Core.JavaAnalyzerRunner
+import Core.Types
+import Has
 import Path
 import Path.IO
 import System.Process.Typed
-
 import Utils
 
 instance ReportPostProcessorM AppM' where
@@ -36,6 +32,9 @@ instance ReportPostProcessorM AppM' where
         proc "tar" $
           ["zcf", toFilePath processedFile]
             <> (toFilePath <$> parsedOutFiles)
+    -- clean up the file(s) generated from the previous step to save disk space
+    removeDirRecur $ parent x
+
     pure processedFile
   postProcessHeapDumpReport file dirSuffix (Report x) = do
     -- have to unpack the generated zip file and repack to tgz
@@ -53,6 +52,10 @@ instance ReportPostProcessorM AppM' where
           ["zcf", toFilePath processedFile]
             <> (toFilePath <$> zipFilesList)
     removeDirRecur processedUnpackAbsDir
+
+    -- clean up the fiile(s) generated from the previous step to save disk space
+    removeDirRecur $ parent x
+
     pure processedFile
 
   postProcessGCReport file dirSuffix (Report x) = do
@@ -69,4 +72,7 @@ instance ReportPostProcessorM AppM' where
         proc "tar" $
           ["zcf", toFilePath processedFile]
             <> (toFilePath <$> parsedOutFiles)
+    -- clean up the fiile(s) generated from the previous step to save disk space
+    removeDirRecur $ parent x
+
     pure processedFile
