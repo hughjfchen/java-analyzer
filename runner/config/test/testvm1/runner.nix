@@ -65,6 +65,6 @@ in {
   "gcmvcmdlineoptions.preference" = "/usr/local/gcmv/default_preference.emf";
   "curlcmdlineoptions.loginuser" = "test1@test1.com";
   "curlcmdlineoptions.loginpin" = "pass1234";
-  "curlcmdlineoptions.loginurl" = "http://127.0.0.1/rest/rpc/login";
-  "curlcmdlineoptions.uploadurl" = "http://127.0.0.1/uploadreport";
+  "curlcmdlineoptions.loginurl" = "http://testvm1/rest/rpc/login";
+  "curlcmdlineoptions.uploadurl" = "http://testvm1/uploadreport";
 }

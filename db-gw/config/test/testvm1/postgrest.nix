@@ -8,6 +8,6 @@ in {
   "db-anon-role" = ''"${config.my-db-config.db.anonymousRole}"'';
   "db-schema" = ''"${config.my-db-config.db.schema}"'';
   "jwt-secret" = ''"${config.my-db-config.db.jwtSecret}"'';
-  "server-host" = ''"127.0.0.1"'';
+  "server-host" = ''"testvm1"'';
   "server-port" = 3000;
 }
