@@ -26,6 +26,7 @@ import FromConfig.ResourcePool (PoolInfo (..))
 import OddJobs.Cli (CliType (..), CommonStartArgs (startPidFile), defaultStartCommand, defaultStopCommand)
 import OddJobs.ConfigBuilder (defaultJobType, defaultLogStr, defaultTimedLogger, mkConfig)
 import OddJobs.Job (Config (..), Job (..), startJobRunner, throwParsePayload)
+import qualified OddJobs.Types as OT
 import System.FilePath (takeDirectory, (</>))
 import System.Log.FastLogger (LogType' (..), defaultBufSize, withTimedFastLogger)
 import System.Log.FastLogger.Date (newTimeCache, simpleTimeFormat)
@@ -59,6 +60,9 @@ myJobRunner env' job =
       runAppM' env' $ genHeapDumpReport (jobId job) heapDumpPath
     ParseGC gcLogPath ->
       runAppM' env' $ genGCReport (jobId job) gcLogPath
+
+setOJDefaultTimeout :: AppEnv -> OT.Config -> OT.Config
+setOJDefaultTimeout appEnv inConfig = inConfig {cfgDefaultJobTimeout = cfgDefaultJobTimeout $ appEnvOddJobsConfig appEnv}
 
 main :: IO ()
 main = do
@@ -98,4 +102,4 @@ main = do
           -- `OddJobs.ConfigBuilder`. If you want to actually use
           -- structured-logging you'll need to define your own logging function.
           let jobLogger = defaultTimedLogger logger (defaultLogStr defaultJobType)
-          startJobRunner $ mkConfig jobLogger (cfgTableName $ appEnvOddJobsConfig theEnv) dbPool (cfgConcurrencyControl $ appEnvOddJobsConfig theEnv) (myJobRunner theEnv') overrideFn
+          startJobRunner $ mkConfig jobLogger (cfgTableName $ appEnvOddJobsConfig theEnv) dbPool (cfgConcurrencyControl $ appEnvOddJobsConfig theEnv) (myJobRunner theEnv') (overrideFn . setOJDefaultTimeout theEnv)
