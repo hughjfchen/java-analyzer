@@ -78,6 +78,10 @@ let
                                             cp $out/mat/MemoryAnalyzer.jdk11.ini $out/mat/MemoryAnalyzer.ini
                                             rm -fr $out/mat/MemoryAnalyzer.jdk11.ini
                                             '';});
+  # have to override the xvfb-run and patch it only kill xvfb server when its PID exists
+  my-xvfb-run = nPkgs.xvfb-run.overrideAttrs(old: { buildCommand=old.buildCommand + '' sed -i '/kill $XVFBPID/ s:^:[ "X$(ps -eo pid|grep $XVFBPID|grep -v gre
+p)" != "X" ] \&\& :g' $out/bin/.xvfb-run-wrapped '';});
+
   # java jar packages
   my-jca = nPkgs.stdenv.mkDerivation {
     name = "my-jca";
@@ -97,7 +101,7 @@ let
 
   my-jca-sh = nPkgs.writeShellApplication {
     name = "my-jca-sh";
-    runtimeInputs = [ nPkgs.xvfb-run nPkgs.jdk11 ];
+    runtimeInputs = [ my-xvfb-run nPkgs.jdk11 ];
     text = ''
       xvfb-run -a java -jar ${my-jca.src} "$@"
     '';
@@ -117,7 +121,7 @@ let
     # list the runtime dependencies, especially those cannot be determined by nix automatically
     nPkgs.wget
     nPkgs.curl
-    nPkgs.xvfb-run
+    my-xvfb-run
     nPkgs.jdk11
     my-eclipse-mat-with-dtfj
     my-jca-sh
