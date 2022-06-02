@@ -1,6 +1,6 @@
-drop schema if exists data cascade;
-create schema data;
-set search_path = data, public;
+drop schema if exists :data_schema cascade;
+create schema :data_schema;
+set search_path = :data_schema, public;
 
 -- import our application models
 \ir user.sql

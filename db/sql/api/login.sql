@@ -4,7 +4,7 @@ declare
     usr record;
 begin
 
-	select * from data."user" as u
+	select * from :data_schema."user" as u
     where u.email = $1 and u.password = public.crypt($2, u.password)
    	INTO usr;
 

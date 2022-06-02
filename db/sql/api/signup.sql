@@ -2,7 +2,7 @@ create or replace function signup(name text, email text, password text) returns 
 declare
     usr record;
 begin
-    insert into data."user" as u
+    insert into :data_schema."user" as u
     (name, email, password) values ($1, $2, $3)
     returning *
    	into usr;

@@ -11,10 +11,16 @@ set client_min_messages to warning;
 \setenv base_dir :DIR
 \set base_dir `if [ $base_dir != ":"DIR ]; then echo $base_dir; else echo "/docker-entrypoint-initdb.d"; fi`
 \set anonymous `echo $DB_ANON_ROLE`
-\set authenticator `echo $DB_USER`
-\set authenticator_pass `echo $DB_PASS`
+\set data_schema `echo $DB_DATA_SCHEMA`
+\set api_schema `echo $DB_API_SCHEMA`
+\set api_authenticator `echo $DB_API_USER`
+\set api_authenticator_pass `echo $DB_API_PASS`
+\set data_authenticator `echo $DB_DATA_USER`
+\set data_authenticator_pass `echo $DB_DATA_PASS`
 \set jwt_secret `echo $JWT_SECRET`
 \set quoted_jwt_secret '\'' :jwt_secret '\''
+\set jwt_lifetime `echo $JWT_LIFETIME`
+\set quoted_jwt_lifetime '\'' :jwt_lifetime '\''
 
 
 \echo # Loading database definition
@@ -37,7 +43,7 @@ create extension if not exists pgcrypto;
 
 -- save app settings (they are storred in the settings.secrets table)
 select settings.set('jwt_secret', :quoted_jwt_secret);
-select settings.set('jwt_lifetime', '3600');
+select settings.set('jwt_lifetime', :quoted_jwt_lifetime);
 
 
 \echo # Loading application definitions

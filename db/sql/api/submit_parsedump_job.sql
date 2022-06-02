@@ -4,12 +4,12 @@ declare
     job record;
     user_jobs_rel1 record;
 begin
-    insert into data.jobs as j
+    insert into :data_schema.jobs as j
     (status, payload) values ($1, $2)
     returning *
    	into job;
 
-    insert into data.user_jobs_rel as ujr
+    insert into :data_schema.user_jobs_rel as ujr
     (job_id, user_id) values (job.id, request.user_id())
     returning *
    	into user_jobs_rel1;

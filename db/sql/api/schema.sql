@@ -1,6 +1,6 @@
-drop schema if exists api cascade;
-create schema api;
-set search_path = api, public;
+drop schema if exists :api_schema cascade;
+create schema :api_schema;
+set search_path = :api_schema, public;
 
 -- this role will be used as the owner of the views in the api schema
 -- it is needed for the definition of the RLS policies

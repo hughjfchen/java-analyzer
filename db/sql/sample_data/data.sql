@@ -11,14 +11,16 @@
 -- 
 -- fill table data.user (2)
 \echo # filling table data.user (3)
-COPY data.user (id,name,email,"password") FROM STDIN (FREEZE ON);
-1	test1	test1@test1.com	pass1234
+COPY :data_schema.user (id,name,email,"password") FROM STDIN (FREEZE ON);
+1	test1	test1@test1.com	pass1111
+2	test2	test2@test2.com	pass2222
+3	test3	test3@test3.com	pass3333
 \.
 
 -- restart sequences
-ALTER SEQUENCE data.user_id_seq RESTART WITH 4;
-ALTER SEQUENCE data.jobs_id_seq RESTART WITH 1;
+ALTER SEQUENCE :data_schema.user_id_seq RESTART WITH 4;
+ALTER SEQUENCE :data_schema.jobs_id_seq RESTART WITH 1;
 -- 
 -- analyze modified tables
-ANALYZE data.user;
-ANALYZE data.jobs;
+ANALYZE :data_schema.user;
+ANALYZE :data_schema.jobs;

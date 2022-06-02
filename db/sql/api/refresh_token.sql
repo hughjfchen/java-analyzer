@@ -4,7 +4,7 @@ declare
     token text;
 begin
 
-    select * from data."user" as u
+    select * from :data_schema."user" as u
     where id = request.user_id()
     into usr;
 
