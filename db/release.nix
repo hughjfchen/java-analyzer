@@ -28,7 +28,7 @@ let
       cp -R $src/sql/api $out/
       cp -R $src/sql/authorization $out/
       cp -R $src/sql/sample_data $out/
-      sed "s/\$DB_ANON_ROLE/${my-db-config.db.anonRole}/g; s/\$DB_DATA_USER/${my-db-config.db.dataSchemaUser}/g; s/\$DB_DATA_PASS/${my-db-config.db.dataSchemaPassword}/g; s/\$DB_API_USER/${my-db-config.db.apiSchemaUser}/g; s/\$DB_API_PASS/${my-db-config.db.apiSchemaPassword}/g; s/\$DB_NAME/${my-db-config.db.database}/g; s/\$JWT_SECRET/${my-db-config.db.jwtSecret}/g; s/\$JWT_LIFETIME/${my-db-config.db.jwtLifeTime}/g" $src/sql/init.sql > $out/init.sql
+      sed "s/\$DB_ANON_ROLE/${my-db-config.db.anonRole}/g; s/\$DB_DATA_USER/${my-db-config.db.dataSchemaUser}/g; s/\$DB_DATA_PASS/${my-db-config.db.dataSchemaPassword}/g; s/\$DB_API_USER/${my-db-config.db.apiSchemaUser}/g; s/\$DB_API_PASS/${my-db-config.db.apiSchemaPassword}/g; s/\$DB_NAME/${my-db-config.db.database}/g; s/\$JWT_SECRET/${my-db-config.db.jwtSecret}/g; s/\$JWT_LIFETIME/${toString my-db-config.db.jwtLifeTime}/g" $src/sql/init.sql > $out/init.sql
     '';
   };
   mk-my-postgresql-service-unit = (nPkgs.nixos ({ lib, pkgs, config, ... }: {
