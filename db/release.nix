@@ -37,7 +37,7 @@ let
       package = nPkgs.postgresql_9_6;
       port = 5432;
       dataDir = "${my-db-env.db.dataDir}";
-      initdbArgs = [ "--encoding=UTF8" "--locale=zh_CN" ];
+      initdbArgs = [ "--encoding=UTF8" ];
       initialScript = my-db-init-script + /init.sql;
       ensureDatabases = [ ];
       ensureUsers = [ ];
@@ -46,7 +46,7 @@ let
         local all all trust
         host all all all md5
       '';
-      settings = { timezone = "Asia/ShangHai"; };
+      settings = { timezone = "Asia/Shanghai"; };
       #superUser = "postgres"; # read-only
 
     };
@@ -120,10 +120,10 @@ in rec {
     # we do not do that for now
     # sudo rm -fr /nix/store/xxx ( maybe a file list for the package and its references )
 
-    for dirToMk in "${my-db-env.db.configDir}" "${my-db-env.db.runDir}" "${my-db-env.db.dataDir}"
+    for dirToRm in "${my-db-env.db.configDir}" "${my-db-env.db.runDir}" "${my-db-env.db.dataDir}"
     do
-      if [ ! -d "$dirToMk" ]; then
-         sudo rm -fr "$dirToMk"
+      if [ -d "$dirToRm" ]; then
+         sudo rm -fr "$dirToRm"
       fi
     done
 
