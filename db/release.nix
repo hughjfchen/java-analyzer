@@ -10,7 +10,9 @@ let
   lib = nPkgs.lib; # lib functions from the native package set
 
   # the deployment env
-  my-db-env = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+  my-db-env-orig = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+  # NOTICE: the postgresql process user must be postgres
+  my-db-env = lib.attrsets.recursiveUpdate my-db-env-orig { db.processUser = "postgres"; };
   # the config
   my-db-config = (import ../config/site/${site}/phase/${phase}/config.nix { pkgs = nPkgs; env = my-db-env; }).config;
   
