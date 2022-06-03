@@ -139,13 +139,13 @@ in rec {
     text = ''
       # pack the systemd service or executable sh and dependencies with full path
       pkg_list_temp=$(mktemp)
-      cp "${mk-my-postgresql-reference}" $pkg_list_temp
+      cp "${mk-my-postgresql-reference}" "$pkg_list_temp"
       {
         echo "${mk-my-postgresql-deploy-sh}"
         echo "${mk-my-postgresql-cleanup-sh}"
-      } >> $pkg_list_temp
-      tar zPcf ./my-postgresql-full-pack-${site}-${phase}.tar.gz -T $pkg_list_temp
-      rm -fr $pkg_list_temp
+      } >> "$pkg_list_temp"
+      tar zPcf ./my-postgresql-full-pack-${site}-${phase}.tar.gz -T "$pkg_list_temp"
+      rm -fr "$pkg_list_temp"
 
       # pack the previous tarball and the two scripts for distribution
       ln -s "${mk-my-postgresql-deploy-sh}" ./deploy-my-postgresql-to-${site}-${phase}
