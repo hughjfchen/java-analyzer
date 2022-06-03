@@ -90,7 +90,7 @@ in rec {
     done
 
     # now unpack(note we should preserve the /nix/store directory structure)
-    sudo tar zPxf ./my-postgresql_dist.tar.gz
+    sudo tar zPxf ./my-postgresql-full-pack-${site}-${phase}.tar.gz
     sudo chown -R ${my-db-env.db.processUser}:${my-db-env.db.processUser} /nix
 
     # setup the systemd service or create a link to the executable
@@ -99,7 +99,7 @@ in rec {
                   ["sudo ${mk-my-postgresql-service-systemd-setup-or-bin-sh}/bin/setup-systemd-units"]
                  else [
                   "ln -s ${mk-my-postgresql-service-systemd-setup-or-bin-sh}/bin/postgres ${my-db-env.db.runDir}/postgres"
-                  "echo To use the program, type ${my-db-env.db.runDir}/postgres at the command prompt."
+                  "echo \"To use the program, type ${my-db-env.db.runDir}/postgres at the command prompt.\""
                  ]
                  )}
 
@@ -150,7 +150,7 @@ in rec {
       # pack the previous tarball and the two scripts for distribution
       ln -s "${mk-my-postgresql-deploy-sh}" ./deploy-my-postgresql-to-${site}-${phase}
       ln -s "${mk-my-postgresql-cleanup-sh}" ./cleanup-my-postgresql-run-env-on-${site}-${phase}
-      tar zcf my-postgresql-full-pack-dist-${site}-${phase}.tar.gz \
+      tar zcf ./my-postgresql-full-pack-dist-${site}-${phase}.tar.gz \
         ./my-postgresql-full-pack-${site}-${phase}.tar.gz \
         ./deploy-my-postgresql-to-${site}-${phase} \
         ./cleanup-my-postgresql-run-env-on-${site}-${phase}
