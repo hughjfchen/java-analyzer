@@ -66,10 +66,10 @@ in rec {
   else
     { };
   mk-my-postgresql-reference = nPkgs.writeReferencesToFile mk-my-postgresql-service-systemd-setup-or-bin-sh;
-  mk-my-postgresql-deploy-sh = nPkgs.writeShellApplication {
-    name = "mk-my-postgresql-deploy-sh";
-    runtimeInputs = [];
-    text = ''
+  mk-my-postgresql-deploy-sh = nPkgs.writeScriptBin "mk-my-postgresql-deploy-sh"
+    ''
+    #!/usr/bin/env bash
+
     # this script need to be run with root or having sudo permission
     [ $EUID -ne 0 ] && ! sudo -v >/dev/null 2>&1 && echo "need to run with root or sudo" && exit 127
 
@@ -104,11 +104,10 @@ in rec {
                  )}
 
     '';
-  };
-  mk-my-postgresql-cleanup-sh = nPkgs.writeShellApplication {
-    name = "mk-my-postgresql-cleanup-sh";
-    runtimeInputs = [];
-    text = ''
+  mk-my-postgresql-cleanup-sh = nPkgs.writeScriptBin "mk-my-postgresql-cleanup-sh"
+    ''
+    #!/usr/bin/env bash
+
     # this script need to be run with root or having sudo permission
     [ $EUID -ne 0 ] && ! sudo -v >/dev/null 2>&1 && echo "need to run with root or sudo" && exit 127
 
@@ -132,24 +131,16 @@ in rec {
     getent group "${my-db-env.db.processUser}" > /dev/null && sudo groupdel -f "${my-db-env.db.processUser}"
 
     '';
-  };
   mk-dist-full-pack = nPkgs.writeShellApplication {
     name = "mk-dist-full-pack";
     runtimeInputs = [];
     text = ''
       # pack the systemd service or executable sh and dependencies with full path
-      pkg_list_temp=$(mktemp)
-      cp "${mk-my-postgresql-reference}" "$pkg_list_temp"
-      {
-        echo "${mk-my-postgresql-deploy-sh}"
-        echo "${mk-my-postgresql-cleanup-sh}"
-      } >> "$pkg_list_temp"
-      tar zPcf ./my-postgresql-full-pack-${site}-${phase}.tar.gz -T "$pkg_list_temp"
-      rm -fr "$pkg_list_temp"
+      tar zPcf ./my-postgresql-full-pack-${site}-${phase}.tar.gz -T "${mk-my-postgresql-reference}"
 
       # pack the previous tarball and the two scripts for distribution
-      ln -s "${mk-my-postgresql-deploy-sh}" ./deploy-my-postgresql-to-${site}-${phase}
-      ln -s "${mk-my-postgresql-cleanup-sh}" ./cleanup-my-postgresql-run-env-on-${site}-${phase}
+      cp "${mk-my-postgresql-deploy-sh}/bin/mk-my-postgresql-deploy-sh" ./deploy-my-postgresql-to-${site}-${phase}
+      cp "${mk-my-postgresql-cleanup-sh}/bin/mk-my-postgresql-cleanup-sh" ./cleanup-my-postgresql-run-env-on-${site}-${phase}
       tar zcf ./my-postgresql-full-pack-dist-${site}-${phase}.tar.gz \
         ./my-postgresql-full-pack-${site}-${phase}.tar.gz \
         ./deploy-my-postgresql-to-${site}-${phase} \
