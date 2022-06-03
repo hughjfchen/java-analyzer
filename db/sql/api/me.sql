@@ -3,7 +3,7 @@ declare
     usr record;
 begin
 
-    select * from :data_schema."user"
+    select * from $DB_DATA_SCHEMA."user"
     where id = request.user_id()
     into usr;
 

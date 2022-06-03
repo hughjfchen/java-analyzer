@@ -6,5 +6,5 @@
 -- in the RLS policy, also, while out table name is "todo", singular, meant to symbolize a data type/model,
 -- the view is named "todos", plural, to match the rest conventions.
 create or replace view parsereports as
-select job_id as id, created_at, updated_at, run_at, status, payload, last_error as last_update, attempts, locked_at, locked_by from :data_schema.parsereports;
+select job_id as id, created_at, updated_at, run_at, status, payload, last_error as last_update, attempts, locked_at, locked_by from $DB_DATA_SCHEMA.parsereports;
 alter view parsereports owner to api; -- it is important to set the correct owner to the RLS policy kicks in

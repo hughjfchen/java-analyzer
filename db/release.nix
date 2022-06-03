@@ -12,7 +12,11 @@ let
   # the deployment env
   my-db-env-orig = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
   # NOTICE: the postgresql process user must be postgres
-  my-db-env = lib.attrsets.recursiveUpdate my-db-env-orig { db.processUser = "postgres"; };
+  my-db-env = lib.attrsets.recursiveUpdate my-db-env-orig { db.processUser = "postgres";
+                                                            db.configDir = "/var/postgres/config";
+                                                            db.runDir = "/var/postgres/run";
+                                                            db.dataDir = "/var/postgres/data";
+                                                          };
   # the config
   my-db-config = (import ../config/site/${site}/phase/${phase}/config.nix { pkgs = nPkgs; env = my-db-env; }).config;
   
@@ -27,10 +31,18 @@ let
       mkdir -p $out
       cp -R $src/sql/libs $out/
       cp -R $src/sql/data $out/
-      cp -R $src/sql/api $out/
       cp -R $src/sql/authorization $out/
       cp -R $src/sql/sample_data $out/
+
+      # replace the environment for the entry point file of the sql initialization
       sed "s/\$DB_ANON_ROLE/${my-db-config.db.anonRole}/g; s/\$DB_API_SCHEMA/${my-db-config.db.apiSchema}/g; s/\$DB_DATA_SCHEMA/${my-db-config.db.dataSchema}/g; s/\$DB_DATA_USER/${my-db-config.db.dataSchemaUser}/g; s/\$DB_DATA_PASS/${my-db-config.db.dataSchemaPassword}/g; s/\$DB_API_USER/${my-db-config.db.apiSchemaUser}/g; s/\$DB_API_PASS/${my-db-config.db.apiSchemaPassword}/g; s/\$DB_NAME/${my-db-config.db.database}/g; s/\$JWT_SECRET/${my-db-config.db.jwtSecret}/g; s/\$JWT_LIFETIME/${toString my-db-config.db.jwtLifeTime}/g" $src/sql/init.sql > $out/init.sql
+
+      # for sql select statement, there can not be an evironement variable, so we must replace them before they can be loaded by psql
+      mkdir -p $out/api
+      for sqlFile in $src/sql/api/*
+      do
+        sed "s/\$DB_DATA_SCHEMA/${my-db-config.db.dataSchema}/g" $sqlFile > $out/api/$(basename $sqlFile)
+      done
     '';
   };
   mk-my-postgresql-service-unit = (nPkgs.nixos ({ lib, pkgs, config, ... }: {
@@ -116,7 +128,7 @@ in rec {
     # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
     # we just stop it before doing the cleanup
     ${lib.concatStringsSep "\n"
-      (if my-db-env.db.isSystemdService then ["sudo systemctl stop my-postgresql.service"] else [])}
+      (if my-db-env.db.isSystemdService then ["sudo systemctl stop postgresql.service"] else [])}
 
     # do we need to delete the program and all its dependencies in /nix/store?
     # we do not do that for now

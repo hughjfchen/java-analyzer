@@ -3,7 +3,7 @@ create or replace function update_parse_report(job_id integer, last_update json)
 declare
     job record;
 begin
-    update :data_schema.jobs as j
+    update $DB_DATA_SCHEMA.jobs as j
     set last_error = $2
     where j.id = $1
     returning *
