@@ -66,7 +66,7 @@ in rec {
   else
     { };
   mk-my-postgresql-reference = nPkgs.writeReferencesToFile mk-my-postgresql-service-systemd-setup-or-bin-sh;
-  mk-my-postgresql-deploy-sh = nPkgs.writeScriptApplication {
+  mk-my-postgresql-deploy-sh = nPkgs.writeShellApplication {
     name = "mk-my-postgresql-deploy-sh";
     runtimeInputs = [];
     text = ''
@@ -103,7 +103,7 @@ in rec {
 
     '';
   };
-  mk-my-postgresql-cleanup-sh = nPkgs.writeScriptApplication {
+  mk-my-postgresql-cleanup-sh = nPkgs.writeShellApplication {
     name = "mk-my-postgresql-cleanup-sh";
     runtimeInputs = [];
     text = ''
@@ -132,7 +132,7 @@ in rec {
 
     '';
   };
-  mk-dist-full-pack = nPkgs.writeScriptApplication {
+  mk-dist-full-pack = nPkgs.writeShellApplication {
     name = "mk-dist-full-pack";
     runtimeInputs = [];
     text = ''
@@ -156,7 +156,7 @@ in rec {
       rm -fr ./my-postgresql-full-pack-${site}-${phase}.tar.gz ./deploy-my-postgresql-to-${site}-${phase} ./cleanup-my-postgresql-run-env-on-${site}-${phase}
     '';
   };
-  mk-dist-delta-pack = nPkgs.writeScriptApplication {
+  mk-dist-delta-pack = nPkgs.writeShellApplication {
     name = "mk-delta-full-pack";
     runtimeInputs = [];
     text = ''
