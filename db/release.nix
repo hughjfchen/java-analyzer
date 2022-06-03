@@ -94,7 +94,7 @@ in rec {
     sudo chown -R "${my-db-env.db.processUser}":"${my-db-env.db.processUser}" /nix
 
     # setup the systemd service or create a link to the executable
-    if [ "${my-db-env.db.isSystemdService}" == "true" ]; then
+    if [ "${toString my-db-env.db.isSystemdService}" == "true" ]; then
       sudo "${mk-my-postgresql-service-systemd-setup-or-bin-sh}"/bin/setup-systemd-units
     else
       ln -s "${mk-my-postgresql-service-systemd-setup-or-bin-sh}"/bin/postgres "${my-db-env.db.runDir}"/postgres
@@ -112,7 +112,7 @@ in rec {
 
     # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
     # we just stop it before doing the cleanup
-    if [ "${my-db-env.db.isSystemdService}" == "true" ]; then
+    if [ "${toString my-db-env.db.isSystemdService}" == "true" ]; then
       sudo systemctl stop my-postgresql.service
     fi
 
