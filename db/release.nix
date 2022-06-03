@@ -85,13 +85,13 @@ in rec {
     do
       if [ ! -d "$dirToMk" ]; then
          sudo mkdir -p "$dirToMk"
-         sudo chown -R "${my-db-env.db.processUser}":"${my-db-env.db.processUser}" "$dirToMk"
+         sudo chown -R ${my-db-env.db.processUser}:${my-db-env.db.processUser} "$dirToMk"
       fi
     done
 
     # now unpack(note we should preserve the /nix/store directory structure)
     sudo tar zPxf ./my-postgresql_dist.tar.gz
-    sudo chown -R "${my-db-env.db.processUser}":"${my-db-env.db.processUser}" /nix
+    sudo chown -R ${my-db-env.db.processUser}:${my-db-env.db.processUser} /nix
 
     # setup the systemd service or create a link to the executable
     ${lib.concatStringsSep "\n"
