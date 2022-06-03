@@ -96,11 +96,11 @@ in rec {
     # setup the systemd service or create a link to the executable
     ${lib.concatStringsSep "\n"
                 (if my-db-env.db.isSystemdService then
-                  "sudo ${mk-my-postgresql-service-systemd-setup-or-bin-sh}/bin/setup-systemd-units"
-                 else ''
-                  ln -s "${mk-my-postgresql-service-systemd-setup-or-bin-sh}"/bin/postgres "${my-db-env.db.runDir}"/postgres
-                  echo "To use the program, type ${my-db-env.db.runDir}/postgres at the command prompt."
-                 ''
+                  ["sudo ${mk-my-postgresql-service-systemd-setup-or-bin-sh}/bin/setup-systemd-units"]
+                 else [
+                  "ln -s ${mk-my-postgresql-service-systemd-setup-or-bin-sh}/bin/postgres ${my-db-env.db.runDir}/postgres"
+                  "echo To use the program, type ${my-db-env.db.runDir}/postgres at the command prompt."
+                 ]
                  )}
 
     '';
@@ -115,7 +115,7 @@ in rec {
     # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
     # we just stop it before doing the cleanup
     ${lib.concatStringsSep "\n"
-                (if my-db-env.db.isSystemdService then "sudo systemctl stop my-postgresql.service" else "")}
+      (if my-db-env.db.isSystemdService then ["sudo systemctl stop my-postgresql.service"] else [])}
 
     # do we need to delete the program and all its dependencies in /nix/store?
     # we do not do that for now
