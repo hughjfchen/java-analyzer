@@ -120,9 +120,15 @@ let
         [ "sudo ${payloadPath}/bin/setup-systemd-units" ]
       else [
         ''
-          { echo "#!/usr/bin/env bash" ; echo "${payloadPath}/bin/${execName} ${startCmd}" } > ${env.runDir}/start.sh''
+          {
+            echo "#!/usr/bin/env bash"
+            echo "${payloadPath}/bin/${execName} ${startCmd} \"$@\""
+          } > ${env.runDir}/start.sh''
         ''
-          { echo "#!/usr/bin/env bash" ; echo "${payloadPath}/bin/${execName} ${stopCmd}" } > ${env.runDir}/stop.sh''
+          {
+            echo "#!/usr/bin/env bash"
+            echo "${payloadPath}/bin/${execName} ${stopCmd} \"$@\""
+          } > ${env.runDir}/stop.sh''
         "chmod +x ${env.runDir}/start.sh ${env.runDir}/stop.sh"
         ''
           echo "check the scripts under ${env.runDir} to start or stop the program."''
