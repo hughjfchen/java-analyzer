@@ -19,6 +19,8 @@ let
                 # The namespace for the reference files, to allow for
                 # multiple independent deploy target
                 # should be site-phase
+    , deployScript # the deploy script path
+    , cleanupScript # the cleanup script path
     }:
     let static = nPkgs.runCommand "reference-file-static" {}
           ''
@@ -27,13 +29,16 @@ let
                 "ln -sv ${file} $out/${nm}"
              ) reference)}
           '';
-        add-unit-snippet = name: file:
+        gen-changed-pkgs-list = name: file:
           ''
             oldReference=$(readlink -f "$referenceDir/${name}" || echo "$referenceDir/${name}")
             if [ -f "$oldReference" -a "$oldReference" != "${file}" ]; then
-              LC_ALL=C comm -13 <(LC_ALL=C sort -u $oldReference) <(LC_ALL=C sort -u "${file}") > $referenceDir/reference-file.changed
+              LC_ALL=C comm -13 <(LC_ALL=C sort -u $oldReference) <(LC_ALL=C sort -u "${file}") > $referenceDir/reference-file.changed."${site}"."${phase}"
+              fileListToPack="$referenceDir/reference-file.changed.${site}.${phase}"
+            else
+              fileListToPack="${file}"
             fi
-            ln -sf "./reference-file-static/${namespace}/${name}" \
+            ln -sf "/nix/var/reference-file-static/${namespace}/${name}" \
               "$referenceDir/.${name}.tmp"
             mv -T "$referenceDir/.${name}.tmp" "$referenceDir/${name}"
           '';
@@ -43,19 +48,34 @@ let
           #!${nPkgs.bash}/bin/bash -e
           export PATH=${nPkgs.coreutils}/bin
 
-          referenceDir=./reference-file
+          fileListToPack="${static}"
+
+          referenceDir=/nix/var/reference-file
           mkdir -p "$referenceDir"
 
-          oldStatic=$(readlink -f ./reference-file-static/${namespace} || true)
+          oldStatic=$(readlink -f /nix/var/reference-file-static/${namespace} || true)
           if [ "$oldStatic" != "${static}" ]; then
             ${lib.concatStringsSep "\n"
-                (lib.mapAttrsToList add-unit-snippet reference)}
-            mkdir -p ./reference-file-static
-            ln -sfT ${static} ./reference-file-static/.${namespace}.tmp
-            mv -T ./reference-file-static/.${namespace}.tmp ./reference-file-static/${namespace}
+                (lib.mapAttrsToList gen-changed-pkgs-list reference)}
+            mkdir -p /nix/var/reference-file-static
+            ln -sfT ${static} /nix/var/reference-file-static/.${namespace}.tmp
+            mv -T /nix/var/reference-file-static/.${namespace}.tmp /nix/var/reference-file-static/${namespace}
           else
             echo "Dependence reference file unchanged, doing nothing" >&2
           fi
+
+          # pack the systemd service or executable sh and dependencies with full path
+          tar zPcf ./my-postgresql-full-pack-${site}-${phase}.tar.gz -T "$fileListToPack"
+
+          # pack the previous tarball and the two scripts for distribution
+          cp "${deployScript}/bin/mk-my-postgresql-deploy-sh" ./deploy-my-postgresql-to-${site}-${phase}
+          cp "${cleanupScript}/bin/mk-my-postgresql-cleanup-sh" ./cleanup-my-postgresql-run-env-on-${site}-${phase}
+          tar zcf ./my-postgresql-full-pack-dist-${site}-${phase}.tar.gz \
+            ./my-postgresql-full-pack-${site}-${phase}.tar.gz \
+            ./deploy-my-postgresql-to-${site}-${phase} \
+            ./cleanup-my-postgresql-run-env-on-${site}-${phase}
+          rm -fr ./my-postgresql-full-pack-${site}-${phase}.tar.gz ./deploy-my-postgresql-to-${site}-${phase} ./cleanup-my-postgresql-run-env-on-${site}-${phase}
+
         '';
 
   # the deployment env
