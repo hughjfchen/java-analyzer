@@ -97,7 +97,7 @@ in rec {
     inherit innerTarballName;
     execName = "postgres";
   };
-  mk-my-postgresql-release-pack = release-utils.mk-release-packer {
+  mk-my-release-packer = release-utils.mk-release-packer {
     referencePath = mk-my-postgresql-reference;
     component = pkgName;
     inherit site phase innerTarballName;
