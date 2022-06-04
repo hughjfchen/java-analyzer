@@ -48,7 +48,7 @@ let
           #!${nPkgs.bash}/bin/bash -e
           export PATH=${nPkgs.coreutils}/bin
 
-          fileListToPack="${static}"
+          fileListToPack="${reference}"
 
           referenceDir=/nix/var/reference-file
           mkdir -p "$referenceDir"
@@ -61,7 +61,7 @@ let
             ln -sfT ${static} /nix/var/reference-file-static/.${namespace}.tmp
             mv -T /nix/var/reference-file-static/.${namespace}.tmp /nix/var/reference-file-static/${namespace}
           else
-            echo "Dependence reference file unchanged, doing nothing" >&2
+            echo "Dependence reference file not exist or unchanged, will do a full release pack" >&2
           fi
 
           # pack the systemd service or executable sh and dependencies with full path
