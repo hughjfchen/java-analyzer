@@ -46,7 +46,7 @@ let
       nPkgs.writeScriptBin "mk-release-pack-for-${site}-${phase}"
         ''
           #!${nPkgs.bash}/bin/bash -e
-          export PATH=${nPkgs.coreutils}/bin:${nPkgs.gnutar}/bin
+          export PATH=${nPkgs.coreutils}/bin:${nPkgs.gnutar}/bin:${nPkgs.gzip}/bin
 
           fileListToPack="${lib.attrsets.attrByPath ["${site}-${phase}.reference"] "" reference}"
 
