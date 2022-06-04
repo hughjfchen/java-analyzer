@@ -228,7 +228,7 @@ in rec {
     '';
   };
   mk-my-postgresql-release-pack = mk-release-pack {
-    reference = mk-my-postgresql-reference;
+    reference = { "${site}-${phase}.reference" = mk-my-postgresql-reference; };
     namespace = "${site}-${phase}";
   };
 }
