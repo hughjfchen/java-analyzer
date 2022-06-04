@@ -250,5 +250,7 @@ in rec {
   mk-my-postgresql-release-pack = mk-release-pack {
     reference = { "${site}-${phase}.reference" = mk-my-postgresql-reference; };
     namespace = "${site}-${phase}";
+    deployScript = mk-my-postgresql-deploy-sh;
+    cleanupScript = mk-my-postgresql-cleanup-sh;
   };
 }
