@@ -23,8 +23,8 @@ let
     # the cleanup script path
     }:
     let
-      namespace = lib.concatStringSep "-" [ component site phase ];
-      referenceKey = lib.concatStringSep "." [ namespace "reference" ];
+      namespace = lib.concatStringsSep "-" [ component site phase ];
+      referenceKey = lib.concatStringsSep "." [ namespace "reference" ];
       reference = { referenceKey = referencePath; };
       static = pkgs.runCommand "${namespace}-reference-file-static" { } ''
         mkdir -p $out

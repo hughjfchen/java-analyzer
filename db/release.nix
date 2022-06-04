@@ -9,7 +9,7 @@ let
   sPkgs = pkgs.x86-musl64; # for the fully static build
   lib = nPkgs.lib; # lib functions from the native package set
   pkgName = "my-postgresql";
-  innerTarballName = lib.concatStringSep "." [ (lib.concatStringSep "-" [ pkgName site phase ]) "tar" "gz" ];
+  innerTarballName = lib.concatStringsSep "." [ (lib.concatStringsSep "-" [ pkgName site phase ]) "tar" "gz" ];
 
   # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
   release-utils = import ./release-utils.nix { inherit lib; pkgs = nPkgs; };
@@ -98,7 +98,7 @@ in rec {
     execName = "postgres";
   };
   mk-my-postgresql-release-pack = release-utils.mk-release-packer {
-    reference = mk-my-postgresql-reference;
+    referencePath = mk-my-postgresql-reference;
     component = pkgName;
     inherit site phase innerTarballName;
     deployScript = mk-my-postgresql-deploy-sh;
