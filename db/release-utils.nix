@@ -25,7 +25,7 @@ let
     let
       namespace = lib.concatStringsSep "-" [ component site phase ];
       referenceKey = lib.concatStringsSep "." [ namespace "reference" ];
-      reference = { referenceKey = referencePath; };
+      reference = lib.attrsets.setAttrByPath [ referenceKey ] referencePath;
       static = pkgs.runCommand "${namespace}-reference-file-static" { } ''
         mkdir -p $out
         ${lib.concatStringsSep "\n"
