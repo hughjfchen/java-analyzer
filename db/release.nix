@@ -48,7 +48,7 @@ let
           #!${nPkgs.bash}/bin/bash -e
           export PATH=${nPkgs.coreutils}/bin
 
-          fileListToPack="${reference}"
+          fileListToPack="${lib.attrsets.attrByPath ["${site}-${phase}.reference"] "" reference}"
 
           referenceDir=/nix/var/reference-file
           mkdir -p "$referenceDir"
