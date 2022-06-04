@@ -9,6 +9,55 @@ let
   sPkgs = pkgs.x86-musl64; # for the fully static build
   lib = nPkgs.lib; # lib functions from the native package set
 
+  # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
+  mk-release-pack =
+    { reference # : AttrSet String Path
+                # ^ A set whose names are site-phase and values are
+                # either paths to the corresponding reference file
+                # the name should include ".reference"
+    , namespace # : String
+                # The namespace for the reference files, to allow for
+                # multiple independent deploy target
+                # should be site-phase
+    }:
+    let static = nPkgs.runCommand "reference-file-static" {}
+          ''
+            mkdir -p $out
+            ${lib.concatStringsSep "\n" (lib.mapAttrsToList (nm: file:
+                "ln -sv ${file} $out/${nm}"
+             ) reference)}
+          '';
+        add-unit-snippet = name: file:
+          ''
+            oldReference=$(readlink -f "$referenceDir/${name}" || echo "$referenceDir/${name}")
+            if [ -f "$oldReference" -a "$oldReference" != "${file}" ]; then
+              LC_ALL=C comm -13 <(LC_ALL=C sort -u $oldReference) <(LC_ALL=C sort -u "${file}") > $referenceDir/reference-file.changed
+            fi
+            ln -sf "./reference-file-static/${namespace}/${name}" \
+              "$referenceDir/.${name}.tmp"
+            mv -T "$referenceDir/.${name}.tmp" "$referenceDir/${name}"
+          '';
+    in
+      nPkgs.writeScriptBin "mk-release-pack-for-${site}-${phase}"
+        ''
+          #!${nPkgs.bash}/bin/bash -e
+          export PATH=${nPkgs.coreutils}/bin
+
+          referenceDir=./reference-file
+          mkdir -p "$referenceDir"
+
+          oldStatic=$(readlink -f ./reference-file-static/${namespace} || true)
+          if [ "$oldStatic" != "${static}" ]; then
+            ${lib.concatStringsSep "\n"
+                (lib.mapAttrsToList add-unit-snippet reference)}
+            mkdir -p ./reference-file-static
+            ln -sfT ${static} ./reference-file-static/.${namespace}.tmp
+            mv -T ./reference-file-static/.${namespace}.tmp ./reference-file-static/${namespace}
+          else
+            echo "Dependence reference file unchanged, doing nothing" >&2
+          fi
+        '';
+
   # the deployment env
   my-db-env-orig = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
   # NOTICE: the postgresql process user must be postgres
@@ -128,11 +177,10 @@ in rec {
     # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
     # we just stop it before doing the cleanup
     ${lib.concatStringsSep "\n"
-      (if my-db-env.db.isSystemdService then ["sudo systemctl stop postgresql.service"] else [])}
-
-    # do we need to delete the program and all its dependencies in /nix/store?
-    # we do not do that for now
-    # sudo rm -fr /nix/store/xxx ( maybe a file list for the package and its references )
+      (if my-db-env.db.isSystemdService then
+        ["sudo systemctl stop my-postgresql.service"]
+       else
+         ["${my-db-env.db.runDir}/postgres --command=Stop"])}
 
     for dirToRm in "${my-db-env.db.configDir}" "${my-db-env.db.runDir}" "${my-db-env.db.dataDir}"
     do
@@ -141,12 +189,18 @@ in rec {
       fi
     done
 
-    getent passwd "${my-db-env.db.processUser}" > /dev/null && sudo userdel -fr "${my-db-env.db.processUser}"
-    getent group "${my-db-env.db.processUser}" > /dev/null && sudo groupdel -f "${my-db-env.db.processUser}"
+    # do we need to delete the program and all its dependencies in /nix/store?
+    # we do not do that for now
+    # sudo rm -fr /nix/store/xxx ( maybe a file list for the package and its references )
+
+    # well, shall we remove the user and group? maybe not
+    # we do not do that for now.
+    # getent passwd "${my-db-env.db.processUser}" > /dev/null && sudo userdel -fr "${my-db-env.db.processUser}"
+    # getent group "${my-db-env.db.processUser}" > /dev/null && sudo groupdel -f "${my-db-env.db.processUser}"
 
     '';
   mk-dist-full-pack = nPkgs.writeShellApplication {
-    name = "mk-dist-full-pack";
+    name = "mk-dist-full-pack-${site}-${phase}";
     runtimeInputs = [];
     text = ''
       # pack the systemd service or executable sh and dependencies with full path
@@ -163,7 +217,7 @@ in rec {
     '';
   };
   mk-dist-delta-pack = nPkgs.writeShellApplication {
-    name = "mk-delta-full-pack";
+    name = "mk-delta-full-pack-${site}-${phase}";
     runtimeInputs = [];
     text = ''
       tar zPcf my-postgresql-full-pack.tar.gz -T "${mk-my-postgresql-reference}"
@@ -172,5 +226,9 @@ in rec {
       tar zcf my-postgresql-full-pack_dist.tar.gz my-postgresql-full-pack.tar.gz ./deploy-my-postgresql ./undeploy-my-postgresql
       rm -fr ./deploy-my-postgresql ./undeploy-my-postgresql
     '';
+  };
+  mk-my-postgresql-release-pack = mk-release-pack {
+    reference = mk-my-postgresql-reference;
+    namespace = "${site}-${phase}";
   };
 }
