@@ -34,7 +34,7 @@ let
       gen-changed-pkgs-list = name: file: ''
         oldReference=$(readlink -f "$referenceDir/${name}" || echo "$referenceDir/${name}")
         if [ -f "$oldReference" -a "$oldReference" != "${file}" ]; then
-          LC_ALL=C comm -13 <(LC_ALL=C sort -u $oldReference) <(LC_ALL=C sort -u "${file}") > $referenceDir/${name}.delta"
+          LC_ALL=C comm -13 <(LC_ALL=C sort -u $oldReference) <(LC_ALL=C sort -u "${file}") > "$referenceDir/${name}.delta"
           fileListToPack="$referenceDir/${name}.delta"
         else
           fileListToPack="${file}"
