@@ -1,40 +1,40 @@
 { nativePkgs ? import ./default.nix { }, # the native package set
 pkgs ? import ./cross-build.nix { }
 , # the package set for corss build, we're especially interested in the fully static binary
-releasePhase, # the phase for release, must be "local", "test" and "production"
-releaseHost, # the hostname for release,the binary would deploy to it finally
-genSystemdUnit ? true
-, # whether should generate a systemd unit and a setup script for the binary
-userName ? ""
-, # the user name on the target machine. If empty, use the user on the build machine for program directory, root for running program
-dockerOnTarget ?
-  false # whether docker/docker-compose is needed on the target machine
+site , # the site for release, the binary would deploy to it finally
+phase, # the phase for release, must be "local", "test" and "production"
 }:
 let
   nPkgs = nativePkgs.pkgs;
   sPkgs = pkgs.x86-musl64; # for the fully static build
   lib = nPkgs.lib; # lib functions from the native package set
+  pkgName = "my-postgrest";
+  innerTarballName = lib.concatStringsSep "." [ (lib.concatStringsSep "-" [ pkgName site phase ]) "tar" "gz" ];
+
+  # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
+  release-utils = import ./release-utils.nix { inherit lib; pkgs = nPkgs; };
+
+  # the deployment env
+  my-postgrest-env = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
 
   # dependent config
-  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
-  };
+  my-postgrest-config = (import ../config/site/${site}/phase/${phase}/config.nix { pkgs = nPkgs; env = my-postgrest-env; }).config;
 
   # my services dependencies
   # following define the service
-  my-postgrest-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = {inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget my-db-config;}; };
   my-postgrest-config-kv = nPkgs.writeTextFile {
-    name = "my-postgrest-config";
+    name = lib.concatStringsSep "-" [ pkgName "config" ];
     # generate the key = value format config, refer to the lib.generators for other formats
-    text = (lib.generators.toKeyValue {}) my-postgrest-config.postgrest;
+    text = lib.generators.toKeyValue my-postgrest-config.db-gw;
   };
 
   # my services dependencies
   my-postgrest-bin-sh = nPkgs.writeShellApplication {
-    name = "my-postgrest-bin-sh";
+    name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
     runtimeInputs = [ nPkgs.haskellPackages.postgrest ];
     text = ''
-      [ ! -f /var/${userName}/config/postgrest.conf ] && cp ${my-postgrest-config-kv} /var/${userName}/config/postgrest.conf
-      postgrest /var/${userName}/config/postgrest.conf "$@"
+      [ ! -f ${my-postgrest-env.db-gw.configDir}/postgrest.conf ] && cp ${my-postgrest-config-kv} ${my-postgrest-env.db-gw.configDir}/postgrest.conf
+      postgrest ${my-postgrest-env.db-gw.configDir}/postgrest.conf "$@"
     '';
   };
 
@@ -59,27 +59,52 @@ let
           description = "my postgrest service";
           serviceConfig = {
             Type = "simple";
-            User = "${userName}";
-            ExecStart = "${my-postgrest-bin-sh}/bin/my-postgrest-bin-sh";
+            User = "${my-postgrest-env.db-gw.processUser}";
+            ExecStart = "${my-postgrest-bin-sh}/bin/${my-postgrest-bin-sh.name}";
             Restart = "on-failure";
           };
         };
       };
     };
-  mk-my-postgrest-service-unit = nPkgs.writeText "my-postgrest.service"
-    (nPkgs.nixos ({ lib, pkgs, config, ... }: {
-      imports = [ my-postgrest-service ];
-    })).config.systemd.units."my-postgrest.service".text;
 
-in {
+  serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] mk-my-postgrest-service-unit;
+
+  mk-my-postgrest-service-unit = nPkgs.writeText serviceNameKey
+    (lib.attrsets.getAttrFromPath [ "config" "systemd" "units" serviceNameKey "text" ] (nPkgs.nixos ({ lib, pkgs, config, ... }: {
+      imports = [ my-postgrest-service ];
+    })));
+
+in rec {
   inherit nativePkgs pkgs my-postgrest-config-kv;
 
-  mk-my-postgrest-service-systemd-setup-or-bin-sh = if genSystemdUnit then
+  mk-my-postgrest-service-systemd-setup-or-bin-sh = if my-postgrest-env.db-gw.isSystemdService then
     (nPkgs.setupSystemdUnits {
-      namespace = "my-postgrest";
-      units = { "my-postgrest.service" = mk-my-postgrest-service-unit; };
+      namespace = pkgName;
+      units = serviceNameUnit;
     })
   else
     my-postgrest-bin-sh;
+
+  mk-my-postgrest-reference = nPkgs.writeReferencesToFile mk-my-postgrest-service-systemd-setup-or-bin-sh;
+  mk-my-postgrest-deploy-sh = release-utils.mk-deploy-sh {
+    env = my-postgrest-env.db-gw;
+    payloadPath =  mk-my-postgrest-service-systemd-setup-or-bin-sh;
+    inherit innerTarballName;
+    execName = "postgrest";
+  };
+  mk-my-postgrest-cleanup-sh = release-utils.mk-cleanup-sh {
+    env = my-postgrest-env.db-gw;
+    payloadPath =  mk-my-postgrest-service-systemd-setup-or-bin-sh;
+    inherit innerTarballName;
+    execName = "postgrest";
+  };
+  mk-my-release-packer = release-utils.mk-release-packer {
+    referencePath = mk-my-postgrest-reference;
+    component = pkgName;
+    inherit site phase innerTarballName;
+    deployScript = mk-my-postgrest-deploy-sh;
+    cleanupScript = mk-my-postgrest-cleanup-sh;
+  };
 
 }

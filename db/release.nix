@@ -71,16 +71,15 @@ let
     };
   })).config.systemd.units."postgresql.service".unit;
 
+  serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] (mk-my-postgresql-service-unit + /postgresql.service);
 in rec {
   inherit nativePkgs pkgs my-db-config;
 
   mk-my-postgresql-service-systemd-setup-or-bin-sh = if my-db-env.db.isSystemdService then
     (nPkgs.setupSystemdUnits {
-      namespace = "my-postgresql";
-      units = {
-        "my-postgresql.service" = mk-my-postgresql-service-unit
-          + /postgresql.service;
-      };
+      namespace = pkgName;
+      units = serviceNameUnit;
     })
   else
     { };
