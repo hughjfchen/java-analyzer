@@ -1,35 +1,33 @@
 { nativePkgs ? import ./default.nix { }, # the native package set
 pkgs ? import ./cross-build.nix { }
 , # the package set for corss build, we're especially interested in the fully static binary
-releasePhase, # the phase for release, must be "local", "test" and "production"
-releaseHost, # the hostname for release,the binary would deploy to it finally
-genSystemdUnit ? true
-, # whether should generate a systemd unit and a setup script for the binary
-userName ? ""
-, # the user name on the target machine. If empty, use the user on the build machine for program directory, root for running program
-dockerOnTarget ?
-  false # whether docker/docker-compose is needed on the target machine
+site , # the site for release, the binary would deploy to it finally
+phase, # the phase for release, must be "local", "test" and "production"
 }:
 let
   nPkgs = nativePkgs.pkgs;
   sPkgs = pkgs.x86-musl64; # for the fully static build
   lib = nPkgs.lib; # lib functions from the native package set
+  pkgName = "my-openresty";
+  innerTarballName = lib.concatStringsSep "." [ (lib.concatStringsSep "-" [ pkgName site phase ]) "tar" "gz" ];
 
-  common-config = { inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget;};
+  # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
+  release-utils = import ./release-utils.nix { inherit lib; pkgs = nPkgs; };
+
+  # the deployment env
+  my-openresty-env = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+
   # dependent config
-  my-db-config = import ../db/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config; };
+  my-openresty-config = (import ../config/site/${site}/phase/${phase}/config.nix { pkgs = nPkgs; env = my-openresty-env; }).config;
 
-  my-postgrest-config = import ../db-gw/config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config;};};
-
-  my-openresty-config = import ./config/${releasePhase}/${releaseHost}/default.nix { pkgs = nPkgs; lib = lib; config = common-config // { inherit my-db-config my-postgrest-config;}; };
-
-  my-frontend-distributable = (import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; }).my-frontend-distributable;
+  # the frontend, comment out for now.
+  #my-frontend-distributable = (import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; }).my-frontend-distributable;
 
   # my services dependencies
   # following define the service
   my-openresty-src = nPkgs.stdenv.mkDerivation {
     src = ./.;
-    name = "my-openresty-src";
+    name = lib.concatStringsSep "-" [ pkgName "src" ];
     dontBuild = true;
     dontUnpack = true;
     installPhase = ''
@@ -48,32 +46,32 @@ let
 
   # my services dependencies
   my-openresty-bin-sh = nPkgs.writeShellApplication {
-    name = "my-openresty-bin-sh";
+    name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
     runtimeInputs = [ nPkgs.openresty ];
     text = ''
-      [ ! -d /var/log/nginx ] && mkdir -p /var/log/nginx && chown -R ${userName}:${userName} /var/log/nginx
-      [ ! -d /var/cache/nginx/client_body ] && mkdir -p /var/cache/nginx/client_body && chown -R ${userName}:${userName} /var/cache/nginx
-      [ ! -d /var/${userName}/openresty ] && mkdir -p /var/${userName}/openresty && cp -R ${my-openresty-src}/* /var/${userName}/openresty && chown -R ${userName}:${userName} /var/${userName}/openresty
-      [ ! -d /var/${userName}/openresty/nginx/logs ] && mkdir -p /var/${userName}/openresty/nginx/logs && chown -R ${userName}:${userName} /var/${userName}/openresty/nginx/logs
-      [ ! -d /var/${userName}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${userName}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/dumpfiles
-      [ ! -d /var/${userName}/openresty/nginx/web/parsereports ] && mkdir -p /var/${userName}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${userName}/openresty/nginx/web/parsereports
-      if [ ! -f /var/${userName}/openresty/env.export ]; then
-         echo 'export DB_HOST=${my-db-config.db.host}' > /var/${userName}/openresty/env.export
+      [ ! -d /var/log/nginx ] && mkdir -p /var/log/nginx && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/log/nginx
+      [ ! -d /var/cache/nginx/client_body ] && mkdir -p /var/cache/nginx/client_body && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/cache/nginx
+      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty && cp -R ${my-openresty-src}/* /var/${my-openresty-env.api-gw.processUser}/openresty && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/${my-openresty-env.api-gw.processUser}/openresty
+      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs
+      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles
+      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports
+      if [ ! -f /var/${my-openresty-env.api-gw.processUser}/openresty/env.export ]; then
+         echo 'export DB_HOST=${my-openresty-config.db.host}' > /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
          {
-            echo 'export DB_PORT=${toString my-db-config.db.port}'
-            echo 'export DB_USER=${my-db-config.db.user}'
-            echo 'export DB_PASS=${my-db-config.db.password}'
-            echo 'export DB_NAME=${my-db-config.db.database}'
-            echo 'export DB_SCHEMA=${my-db-config.db.schema}'
-            echo 'export JWT_SECRET=${my-db-config.db.jwtSecret}'
-            echo 'export POSTGREST_HOST=${my-postgrest-config.postgrest.server-host}'
-            echo 'export POSTGREST_PORT=${toString my-postgrest-config.postgrest.server-port}'
-            echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.openresty.docRoot}'
-         }  >> /var/${userName}/openresty/env.export
+            echo 'export DB_PORT=${toString my-openresty-config.db.port}'
+            echo 'export DB_USER=${my-openresty-config.db.user}'
+            echo 'export DB_PASS=${my-openresty-config.db.password}'
+            echo 'export DB_NAME=${my-openresty-config.db.database}'
+            echo 'export DB_SCHEMA=${my-openresty-config.db.schema}'
+            echo 'export JWT_SECRET=${my-openresty-config.db.jwtSecret}'
+            echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
+            echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
+            echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
+         }  >> /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
       fi
       # shellcheck source=/dev/null
-      . /var/${userName}/openresty/env.export
-      openresty -p "/var/${userName}/openresty/nginx" -c "/var/${userName}/openresty/nginx/conf/nginx.conf" "$@"
+      . /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
+      openresty -p "/var/${my-openresty-env.api-gw.processUser}/openresty/nginx" -c "/var/${my-openresty-env.api-gw.processUser}/openresty/nginx/conf/nginx.conf" "$@"
     '';
   };
 
@@ -99,32 +97,58 @@ let
           serviceConfig = {
             Type = "forking";
             ExecStartPre = ''
-              ${my-openresty-bin-sh}/bin/my-openresty-bin-sh -t -q -g "daemon on; master_process on;"
+              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -t -q -g "daemon on; master_process on;"
             '';
             ExecStart = ''
-              ${my-openresty-bin-sh}/bin/my-openresty-bin-sh -g "daemon on; master_process on;"
+              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -g "daemon on; master_process on;"
             '';
             ExecReload = ''
-              ${my-openresty-bin-sh}/bin/my-openresty-bin-sh -g "daemon on; master_process on;" -s reload
+              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -g "daemon on; master_process on;" -s reload
             '';
-            ExecStop = "${my-openresty-bin-sh}/bin/my-openresty-bin-sh -s stop";
+            ExecStop = "${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -s stop";
             Restart = "on-failure";
           };
         };
       };
     };
-  mk-my-openresty-service-unit = nPkgs.writeText "my-openresty.service"
-    (nPkgs.nixos ({ lib, pkgs, config, ... }: {
-      imports = [ my-openresty-service ];
-    })).config.systemd.units."my-openresty.service".text;
-in {
-  inherit nativePkgs pkgs my-db-config my-postgrest-config my-openresty-config;
 
-  mk-my-openresty-service-systemd-setup-or-bin-sh = if genSystemdUnit then
+  serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] mk-my-openresty-service-unit;
+
+  mk-my-openresty-service-unit = nPkgs.writeText serviceNameKey
+    (lib.attrsets.getAttrFromPath [ "config" "systemd" "units" serviceNameKey "text" ] (nPkgs.nixos ({ lib, pkgs, config, ... }: {
+      imports = [ my-openresty-service ];
+    })));
+
+in rec {
+  inherit nativePkgs pkgs my-openresty-config;
+
+  mk-my-openresty-service-systemd-setup-or-bin-sh = if my-openresty-env.api-gw.isSystemdService then
     (nPkgs.setupSystemdUnits {
-      namespace = "my-openresty";
-      units = { "my-openresty.service" = mk-my-openresty-service-unit; };
+      namespace = pkgName;
+      units = serviceNameUnit;
     })
   else
     my-openresty-bin-sh;
+
+  mk-my-openresty-reference = nPkgs.writeReferencesToFile mk-my-openresty-service-systemd-setup-or-bin-sh;
+  mk-my-openresty-deploy-sh = release-utils.mk-deploy-sh {
+    env = my-openresty-env.db-gw;
+    payloadPath =  mk-my-openresty-service-systemd-setup-or-bin-sh;
+    inherit innerTarballName;
+    execName = "openresty";
+  };
+  mk-my-openresty-cleanup-sh = release-utils.mk-cleanup-sh {
+    env = my-openresty-env.db-gw;
+    payloadPath =  mk-my-openresty-service-systemd-setup-or-bin-sh;
+    inherit innerTarballName;
+    execName = "openresty";
+  };
+  mk-my-release-packer = release-utils.mk-release-packer {
+    referencePath = mk-my-openresty-reference;
+    component = pkgName;
+    inherit site phase innerTarballName;
+    deployScript = mk-my-openresty-deploy-sh;
+    cleanupScript = mk-my-openresty-cleanup-sh;
+  };
 }
