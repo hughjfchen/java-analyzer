@@ -121,9 +121,9 @@
         '';
       };
       "oddjobsstartargs.daemonize" = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        example = true;
+        type = lib.types.str;
+        default = "True";
+        example = "True";
         description = ''
           Should the web ui start as a daemon?
           This may affect if you are using odd-jobs as systemd service.
