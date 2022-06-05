@@ -33,7 +33,7 @@ let
     nPkgs.xvfb-run
     nPkgs.jdk11
     nPkgs.eclipse-mat
-    sPkgs.my-runner.my-runner-exe
+    sPkgs.java-analyzer-runner.java-analyzer-runner-exe
   ];
   my-runner-bin-sh = nPkgs.writeShellApplication {
     name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
