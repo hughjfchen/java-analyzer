@@ -7,7 +7,7 @@
     runner = {
       "command" = "Start";
       "database.host" = "${config.db.host}";
-      "database.port" = "${toString config.db.port}";
+      "database.port" = config.db.port;
       "database.user" = "${config.db.dataSchemaUser}";
       "database.password" = "${config.db.dataSchemaPassword}";
       "database.database" = "${config.db.database}";
