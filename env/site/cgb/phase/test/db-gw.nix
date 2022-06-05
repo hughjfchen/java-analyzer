@@ -14,10 +14,10 @@ in {
 
   config = {
     db-gw = rec {
-      hostName = "testdb1";
-      dnsName = "testdb1.cgb.com";
+      hostName = "testdbgw1";
+      dnsName = "testdbgw1";
       ipAddress = "10.1.23.222";
-      processUser = "jadbuser";
+      processUser = "jadbgwuser";
       isSystemdService = true;
       configDir = "/var/${processUser}/config";
       runDir = "/var/${processUser}/run";

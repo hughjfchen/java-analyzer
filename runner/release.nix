@@ -92,12 +92,16 @@ in rec
     payloadPath =  mk-my-runner-service-systemd-setup-or-bin-sh;
     inherit innerTarballName;
     execName = "${my-runner-bin-sh.name}";
+    startCmd = "--command=Start";
+    stopCmd = "--command=Stop";
   };
   mk-my-runner-cleanup-sh = release-utils.mk-cleanup-sh {
     env = my-runner-env.runner;
     payloadPath =  mk-my-runner-service-systemd-setup-or-bin-sh;
     inherit innerTarballName;
     execName = "${my-runner-bin-sh.name}";
+    startCmd = "--command=Start";
+    stopCmd = "--command=Stop";
   };
   mk-my-release-packer = release-utils.mk-release-packer {
     referencePath = mk-my-runner-reference;

@@ -14,11 +14,11 @@ in {
 
   config = {
     runner = rec {
-      hostName = "testdb1";
-      dnsName = "testdb1.cgb.com";
+      hostName = "testrunner1";
+      dnsName = "testrunner1";
       ipAddress = "10.1.23.222";
-      processUser = "jadbuser";
-      isSystemdService = true;
+      processUser = "jarunneruser";
+      isSystemdService = false;
       configDir = "/var/${processUser}/config";
       runDir = "/var/${processUser}/run";
       dataDir = "/var/${processUser}/data";

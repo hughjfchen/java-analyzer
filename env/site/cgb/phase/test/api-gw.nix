@@ -14,10 +14,10 @@ in {
 
   config = {
     api-gw = rec {
-      hostName = "testdb1";
-      dnsName = "testdb1.cgb.com";
+      hostName = "testapi1";
+      dnsName = "testapi1";
       ipAddress = "10.1.23.222";
-      processUser = "jadbuser";
+      processUser = "jaapiuser";
       isSystemdService = true;
       configDir = "/var/${processUser}/config";
       runDir = "/var/${processUser}/run";

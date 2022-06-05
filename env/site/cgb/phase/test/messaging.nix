@@ -14,10 +14,10 @@ in {
 
   config = {
     messaging = rec {
-      hostName = "testdb1";
-      dnsName = "testdb1.cgb.com";
+      hostName = "testmsg1";
+      dnsName = "testmsg1";
       ipAddress = "10.1.23.222";
-      processUser = "jadbuser";
+      processUser = "jamsguser";
       isSystemdService = true;
       configDir = "/var/${processUser}/config";
       runDir = "/var/${processUser}/run";

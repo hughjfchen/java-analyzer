@@ -15,7 +15,7 @@ in {
   config = {
     db = rec {
       hostName = "testdb1";
-      dnsName = "testdb1.cgb.com";
+      dnsName = "testdb1";
       ipAddress = "10.1.23.222";
       processUser = "jadbuser";
       isSystemdService = true;

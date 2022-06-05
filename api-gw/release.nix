@@ -67,6 +67,10 @@ let
             echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
             echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
             echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
+            echo 'export OPENRESTY_SERVER_NAME=${my-openresty-config.api-gw.serverName}'
+            echo 'export OPENRESTY_LISTEN_PORT=${my-openresty-config.api-gw.listenPort}'
+            echo 'export OPENRESTY_RESOLVER=${my-openresty-config.api-gw.resolver}'
+            echo 'export OPENRESTY_UPLOAD_MAX_SIZE=${my-openresty-config.api-gw.uploadMaxSize}'
          }  >> /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
       fi
       # shellcheck source=/dev/null
@@ -77,10 +81,8 @@ let
 
   # following define the service
   my-openresty-service = { lib, pkgs, config, ... }:
-    let cfg = config.services.my-openresty;
-    in {
-      options = {
-        services.my-openresty = {
+    {
+      options = lib.attrsets.setAttrByPath [ "services" pkgName ] {
           enable = lib.mkOption {
             default = true;
             type = lib.types.bool;
@@ -88,12 +90,11 @@ let
           };
           # add extra options here, if any
         };
-      };
-      config = lib.mkIf cfg.enable {
-        systemd.services.my-openresty = {
+      config = lib.mkIf (lib.attrsets.getAttrFromPath [ pkgName "enable" ] config.services)
+        (lib.attrsets.setAttrByPath [ "systemd" "services" pkgName ] {
           wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
-          description = "my openresty service";
+          description = "${pkgName} service";
           serviceConfig = {
             Type = "forking";
             ExecStartPre = ''
@@ -108,8 +109,7 @@ let
             ExecStop = "${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -s stop";
             Restart = "on-failure";
           };
-        };
-      };
+        });
     };
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
