@@ -41,10 +41,10 @@
       "cmdpath.wgetpath" = "${pkgs.wget}/bin/wget";
       "cmdpath.curlpath" = "${pkgs.curl}/bin/curl";
       "cmdpath.javapath" = "${pkgs.jdk11}/bin/java";
-      "cmdpath.parsedumpshpath" =
-        "${pkgs.my-eclipse-mat-with-dtfj}/mat/ParseHeapDump.sh";
+      "cmdpath.parsedumpshpath" = "${pkgs.eclipse-mat}/mat/ParseHeapDump.sh";
       "cmdpath.jcapath" = "${pkgs.my-jca.src}";
-      "cmdpath.gcmvpath" = "${pkgs.my-gcmv}/bin/gcmv";
+      # "cmdpath.gcmvpath" = "${pkgs.my-gcmv}/bin/gcmv";
+      "cmdpath.gcmvpath" = "/usr/local/bin/gcmv";
       "outputpath.fetcheddumphome" = "${env.runner.dataDir}/raw_dump_files";
       "outputpath.jcapreprocessorhome" =
         "${env.runner.dataDir}/preprocessed_report_jca";
