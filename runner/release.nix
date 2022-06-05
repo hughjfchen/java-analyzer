@@ -83,7 +83,7 @@ in rec
   mk-my-runner-service-systemd-setup-or-bin-sh = if my-runner-env.runner.isSystemdService then
     (nPkgs.setupSystemdUnits {
       namespace = pkgName;
-      units = mk-my-runner-service-unit;
+      units = serviceNameUnit;
     }) else my-runner-bin-sh;
 
   mk-my-runner-reference = nPkgs.writeReferencesToFile mk-my-runner-service-systemd-setup-or-bin-sh;
