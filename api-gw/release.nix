@@ -59,10 +59,10 @@ let
          echo 'export DB_HOST=${my-openresty-config.db.host}' > /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
          {
             echo 'export DB_PORT=${toString my-openresty-config.db.port}'
-            echo 'export DB_USER=${my-openresty-config.db.user}'
-            echo 'export DB_PASS=${my-openresty-config.db.password}'
+            echo 'export DB_USER=${my-openresty-config.db.apiSchemaUser}'
+            echo 'export DB_PASS=${my-openresty-config.db.apiSchemaPassword}'
             echo 'export DB_NAME=${my-openresty-config.db.database}'
-            echo 'export DB_SCHEMA=${my-openresty-config.db.schema}'
+            echo 'export DB_SCHEMA=${my-openresty-config.db.apiSchema}'
             echo 'export JWT_SECRET=${my-openresty-config.db.jwtSecret}'
             echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
             echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
