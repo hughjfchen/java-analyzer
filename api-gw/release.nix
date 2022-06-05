@@ -68,9 +68,9 @@ let
             echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
             echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
             echo 'export OPENRESTY_SERVER_NAME=${my-openresty-config.api-gw.serverName}'
-            echo 'export OPENRESTY_LISTEN_PORT=${my-openresty-config.api-gw.listenPort}'
+            echo 'export OPENRESTY_LISTEN_PORT=${toString my-openresty-config.api-gw.listenPort}'
             echo 'export OPENRESTY_RESOLVER=${my-openresty-config.api-gw.resolver}'
-            echo 'export OPENRESTY_UPLOAD_MAX_SIZE=${my-openresty-config.api-gw.uploadMaxSize}'
+            echo 'export OPENRESTY_UPLOAD_MAX_SIZE=${toString my-openresty-config.api-gw.uploadMaxSize}'
          }  >> /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
       fi
       # shellcheck source=/dev/null
