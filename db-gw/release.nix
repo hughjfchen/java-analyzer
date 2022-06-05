@@ -42,8 +42,8 @@ let
   my-postgrest-service = { lib, pkgs, config, ... }:
     let cfg = config.services.my-postgrest;
     in {
-      options = {
-        services.my-postgrest = {
+      options = lib.attrsets.setAttrByPath [ "services" pkgName ]
+        {
           enable = lib.mkOption {
             default = true;
             type = lib.types.bool;
@@ -51,9 +51,8 @@ let
           };
           # add extra options here, if any
         };
-      };
-      config = lib.mkIf cfg.enable {
-        systemd.services.my-postgrest = {
+      config = lib.mkIf cfg.enable (lib.attrsets.setAttrByPath [ "systemd" "services" pkgName ]
+        {
           wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
           description = "my postgrest service";
@@ -63,8 +62,7 @@ let
             ExecStart = "${my-postgrest-bin-sh}/bin/${my-postgrest-bin-sh.name}";
             Restart = "on-failure";
           };
-        };
-      };
+        });
     };
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
