@@ -68,7 +68,7 @@
       "gcmvcmdlineoptions.preference" =
         "${env.runner.configDir}/default_preference.emf";
       "curlcmdlineoptions.loginuser" = "test1@test1.com";
-      "curlcmdlineoptions.loginpin" = "pass1234";
+      "curlcmdlineoptions.loginpin" = "pass1111";
       "curlcmdlineoptions.loginurl" = "http://${config.api-gw.serverName}:${
           toString config.api-gw.listenPort
         }/rest/rpc/login";

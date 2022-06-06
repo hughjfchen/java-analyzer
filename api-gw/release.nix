@@ -62,6 +62,8 @@ let
       [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs
       [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles
       [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports
+      [ ! -d ${my-openresty-config.api-gw.docRoot}/dumpfiles ] && mkdir -p ${my-openresty-config.api-gw.docRoot}/dumpfiles && chown -R nobody:nogroup ${my-openresty-config.api-gw.docRoot}/dumpfiles
+      [ ! -d ${my-openresty-config.api-gw.docRoot}/parsereports ] && mkdir -p ${my-openresty-config.api-gw.docRoot}/parsereports && chown -R nobody:nogroup ${my-openresty-config.api-gw.docRoot}/parsereports
       if [ ! -f /var/${my-openresty-env.api-gw.processUser}/openresty/env.export ]; then
          echo 'export DB_HOST=${my-openresty-config.db.host}' > /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
          {
