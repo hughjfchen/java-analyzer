@@ -44,14 +44,6 @@
         If the service should be a systemd service on the target host?
       '';
     };
-    configDir = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/myuser/config";
-      example = "/var/myuser/config";
-      description = ''
-        The directory the config should be put under on the target host.
-      '';
-    };
     runDir = lib.mkOption {
       type = lib.types.str;
       default = "/var/myuser/run";

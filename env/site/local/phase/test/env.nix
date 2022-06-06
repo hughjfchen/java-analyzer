@@ -1,6 +1,4 @@
 { modules ? [ ], pkgs, ... }:
-#{ modules ? [ ], pkgs, hostName, dnsName, ipAddress, processUser, isSystemdService
-#, configDir, runDir, dataDir, ... }:
 
 let _pkgs = pkgs;
 in let
@@ -25,14 +23,6 @@ in let
     key = ./env-builder.nix;
     config._module.check = true;
     config._module.args.pkgs = lib.mkIf (pkgs != null) (lib.mkForce pkgs);
-    # config.hostName = hostName;
-    # config.dnsName = dnsName;
-    # config.ipAddress = ipAddress;
-    # config.processUser = processUser;
-    # config.isSystemdService = isSystemdService;
-    # config.configDir = configDir;
-    # config.runDir = runDir;
-    # config.dataDir = dataDir;
   };
 
 in { env = lib.attrByPath [ "config" ] { } envBuilder; } // {

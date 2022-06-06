@@ -103,7 +103,7 @@ let
       getent passwd "${env.processUser}" > /dev/null || sudo useradd -m -p Passw0rd -g "${env.processUser}" "${env.processUser}"
 
       # create directories
-      for dirToMk in "${env.configDir}" "${env.runDir}" "${env.dataDir}"
+      for dirToMk in "${env.runDir}" "${env.dataDir}"
       do
         if [ ! -d "$dirToMk" ]; then
            sudo mkdir -p "$dirToMk"
@@ -161,7 +161,7 @@ let
         fi''] else
         [ "[ -e ${env.runDir}/stop.sh ] && ${env.runDir}/stop.sh" ])}
 
-      for dirToRm in "${env.configDir}" "${env.runDir}" "${env.dataDir}"
+      for dirToRm in "${env.runDir}" "${env.dataDir}"
       do
         if [ -d "$dirToRm" ]; then
            sudo rm -fr "$dirToRm"

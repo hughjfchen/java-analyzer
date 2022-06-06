@@ -19,7 +19,6 @@ in {
       ipAddress = "127.0.0.1";
       processUser = "jamsguser";
       isSystemdService = true;
-      configDir = "/var/${processUser}/config";
       runDir = "/var/${processUser}/run";
       dataDir = "/var/${processUser}/data";
     };

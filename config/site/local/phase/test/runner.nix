@@ -66,7 +66,7 @@
       "gcmvcmdlineoptions.xmx" = 2048;
       "gcmvcmdlineoptions.jvm" = "${pkgs.jdk11}";
       "gcmvcmdlineoptions.preference" =
-        "${env.runner.configDir}/default_preference.emf";
+        "${env.runner.dataDir}/default_preference.emf";
       "curlcmdlineoptions.loginuser" = "test1@test1.com";
       "curlcmdlineoptions.loginpin" = "pass1111";
       "curlcmdlineoptions.loginurl" = "http://${config.api-gw.serverName}:${

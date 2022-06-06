@@ -460,7 +460,7 @@
       };
       "gcmvcmdlineoptions.preference" = lib.mkOption {
         type = lib.types.str;
-        default = "${env.runner.configDir}/default_preference.emf";
+        default = "${env.runner.dataDir}/default_preference.emf";
         description = ''
           The default preference of gcmv.
         '';
