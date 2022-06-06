@@ -44,7 +44,7 @@ let
       mkdir -p $out/nginx/conf
       for confFile in $src/openresty/nginx/conf/*
       do
-        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_RUN_DIR/${my-openresty-env.api-gw.runDir}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
+        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_RUN_DIR/${lib.strings.escape ["/"] my-openresty-env.api-gw.runDir}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
       done
 
       ln -s $out/lua $out/lualib/user_code
