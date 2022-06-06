@@ -118,21 +118,27 @@ let
       # setup the systemd service or create a link to the executable
       ${lib.concatStringsSep "\n" (if env.isSystemdService then
         [ "sudo ${payloadPath}/bin/setup-systemd-units" ]
-      else [
-        ''
-          {
-            echo "#!/usr/bin/env bash"
-            echo "${payloadPath}/bin/${execName} ${startCmd} \"\$@\""
-          } > ${env.runDir}/start.sh''
-        ''
-          {
-            echo "#!/usr/bin/env bash"
-            echo "${payloadPath}/bin/${execName} ${stopCmd} \"\$@\""
-          } > ${env.runDir}/stop.sh''
-        "chmod +x ${env.runDir}/start.sh ${env.runDir}/stop.sh"
-        ''
-          echo "check the scripts under ${env.runDir} to start or stop the program."''
-      ])}
+      else [''
+        # there is a previous version here, stop it first
+        if [ -e ${env.runDir}/stop.sh ]; then
+          echo "stopping ${execName}"
+          ${env.runDir}/stop.sh
+        fi
+
+        # since the payload path changed for every deployment,
+        # the start/stop scripts must be generated each deployment
+        {
+          echo "#!/usr/bin/env bash"
+          echo "exec ${payloadPath}/bin/${execName} ${startCmd} \"\$@\""
+        } > ${env.runDir}/start.sh
+        {
+          echo "#!/usr/bin/env bash"
+          echo "exec ${payloadPath}/bin/${execName} ${stopCmd} \"\$@\""
+        } > ${env.runDir}/stop.sh
+        chmod +x ${env.runDir}/start.sh ${env.runDir}/stop.sh
+        echo "starting the program ${execName}"
+        ${env.runDir}/start.sh
+        echo "check the scripts under ${env.runDir} to start or stop the program."''])}
 
     '';
   mk-cleanup-sh = { env # the environment for the deployment target machine
@@ -148,11 +154,12 @@ let
 
       # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
       # we just stop it before doing the cleanup
-      unitName=$(awk 'BEGIN { FS="\"" } /unitsToStart\+\=\(/ {print $2}' ${payloadPath}/bin/setup-systemd-units)
-      ${lib.concatStringsSep "\n" (if env.isSystemdService then
-        [ "sudo systemctl stop $unitName" ]
-      else
-        [ "${env.runDir}/stop.sh" ])}
+      ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
+        if [ -e ${payloadPath}/bin/setup-systemd-units ]; then
+           unitName=$(awk 'BEGIN { FS="\"" } /unitsToStart\+\=\(/ {print $2}' ${payloadPath}/bin/setup-systemd-units)
+           sudo systemctl stop $unitName
+        fi''] else
+        [ "[ -e ${env.runDir}/stop.sh ] && ${env.runDir}/stop.sh" ])}
 
       for dirToRm in "${env.configDir}" "${env.runDir}" "${env.dataDir}"
       do

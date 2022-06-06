@@ -33,8 +33,7 @@ let
     name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
     runtimeInputs = [ nPkgs.haskellPackages.postgrest ];
     text = ''
-      [ ! -f ${my-postgrest-env.db-gw.configDir}/postgrest.conf ] && cp ${my-postgrest-config-kv} ${my-postgrest-env.db-gw.configDir}/postgrest.conf
-      postgrest ${my-postgrest-env.db-gw.configDir}/postgrest.conf "$@"
+      postgrest ${my-postgrest-config-kv} "$@"
     '';
   };
 

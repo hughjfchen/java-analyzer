@@ -40,14 +40,30 @@ let
 
       # for some nginx config diretives, there can not be an evironement variable set_by_lua_block,
       # so we must replace them before they can be loaded by nginx
+      # NOTICE: there must not be sub directories under the dir the replaced files located
       mkdir -p $out/nginx/conf
       for confFile in $src/openresty/nginx/conf/*
       do
-        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
+        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_RUN_DIR/${my-openresty-env.api-gw.runDir}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
       done
 
       ln -s $out/lua $out/lualib/user_code
       ln -s $out/lualib $out/nginx/lualib
+
+      # prepare the export environment variables
+      {
+        echo 'export DB_HOST=${my-openresty-config.db.host}'
+        echo 'export DB_PORT=${toString my-openresty-config.db.port}'
+        echo 'export DB_USER=${my-openresty-config.db.apiSchemaUser}'
+        echo 'export DB_PASS=${my-openresty-config.db.apiSchemaPassword}'
+        echo 'export DB_NAME=${my-openresty-config.db.database}'
+        echo 'export DB_SCHEMA=${my-openresty-config.db.apiSchema}'
+        echo 'export JWT_SECRET=${my-openresty-config.db.jwtSecret}'
+        echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
+        echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
+        echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
+      }  > $out/env.export
+
     '';
   };
 
@@ -56,31 +72,13 @@ let
     name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
     runtimeInputs = [ nPkgs.openresty ];
     text = ''
-      [ ! -d /var/log/nginx ] && mkdir -p /var/log/nginx && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/log/nginx
-      [ ! -d /var/cache/nginx/client_body ] && mkdir -p /var/cache/nginx/client_body && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/cache/nginx
-      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty && cp -R ${my-openresty-src}/* /var/${my-openresty-env.api-gw.processUser}/openresty && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/${my-openresty-env.api-gw.processUser}/openresty
-      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/logs
-      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles && chown -R nobody:nogroup /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/dumpfiles
-      [ ! -d /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports ] && mkdir -p /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports && chown -R nobody:nogroup /var/${my-openresty-env.api-gw.processUser}/openresty/nginx/web/parsereports
+      [ ! -d ${my-openresty-env.api-gw.runDir}/log ] && mkdir -p ${my-openresty-env.api-gw.runDir}/log && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-env.api-gw.runDir}/log
+      [ ! -d ${my-openresty-env.api-gw.runDir}/client_body ] && mkdir -p ${my-openresty-env.api-gw.runDir}/client_body && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-env.api-gw.runDir}/client_body
       [ ! -d ${my-openresty-config.api-gw.docRoot}/dumpfiles ] && mkdir -p ${my-openresty-config.api-gw.docRoot}/dumpfiles && chown -R nobody:nogroup ${my-openresty-config.api-gw.docRoot}/dumpfiles
       [ ! -d ${my-openresty-config.api-gw.docRoot}/parsereports ] && mkdir -p ${my-openresty-config.api-gw.docRoot}/parsereports && chown -R nobody:nogroup ${my-openresty-config.api-gw.docRoot}/parsereports
-      if [ ! -f /var/${my-openresty-env.api-gw.processUser}/openresty/env.export ]; then
-         echo 'export DB_HOST=${my-openresty-config.db.host}' > /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
-         {
-            echo 'export DB_PORT=${toString my-openresty-config.db.port}'
-            echo 'export DB_USER=${my-openresty-config.db.apiSchemaUser}'
-            echo 'export DB_PASS=${my-openresty-config.db.apiSchemaPassword}'
-            echo 'export DB_NAME=${my-openresty-config.db.database}'
-            echo 'export DB_SCHEMA=${my-openresty-config.db.apiSchema}'
-            echo 'export JWT_SECRET=${my-openresty-config.db.jwtSecret}'
-            echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
-            echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
-            echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
-         }  >> /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
-      fi
       # shellcheck source=/dev/null
-      . /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
-      openresty -p "/var/${my-openresty-env.api-gw.processUser}/openresty/nginx" -c "/var/${my-openresty-env.api-gw.processUser}/openresty/nginx/conf/nginx.conf" "$@"
+      . ${my-openresty-src}/env.export
+      openresty -p "${my-openresty-src}/nginx" -c "${my-openresty-src}/nginx/conf/nginx.conf" "$@"
     '';
   };
 

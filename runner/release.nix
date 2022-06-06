@@ -40,8 +40,7 @@ let
     runtimeInputs = my-runner-bin-sh-paths;
     # wrap the executable, suppose it accept a --config commandl ine option to load the config
     text = ''
-      [ ! -f ${my-runner-env.runner.configDir}/my-runner.properties ] && cp ${my-runner-config-kv} ${my-runner-env.runner.configDir}/my-runner.properties
-      ${sPkgs.java-analyzer-runner.java-analyzer-runner-exe.exeName} --config.file="${my-runner-env.runner.configDir}/my-runner.properties" "$@"
+      ${sPkgs.java-analyzer-runner.java-analyzer-runner-exe.exeName} --config.file="${my-runner-config-kv}" "$@"
     '';
   };
   # following define the service
