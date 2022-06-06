@@ -62,7 +62,12 @@ myJobRunner env' job =
       runAppM' env' $ genGCReport (jobId job) gcLogPath
 
 setOJDefaultTimeout :: AppEnv -> OT.Config -> OT.Config
-setOJDefaultTimeout appEnv inConfig = inConfig {cfgDefaultJobTimeout = cfgDefaultJobTimeout $ appEnvOddJobsConfig appEnv}
+setOJDefaultTimeout appEnv inConfig =
+  inConfig
+    { cfgDefaultJobTimeout = cfgDefaultJobTimeout $ appEnvOddJobsConfig appEnv,
+      cfgPollingInterval = cfgPollingInterval $ appEnvOddJobsConfig appEnv,
+      cfgDefaultMaxAttempts = cfgDefaultMaxAttempts $ appEnvOddJobsConfig appEnv
+    }
 
 main :: IO ()
 main = do
