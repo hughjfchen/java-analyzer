@@ -136,13 +136,13 @@ in rec {
 
   mk-my-openresty-reference = nPkgs.writeReferencesToFile mk-my-openresty-service-systemd-setup-or-bin-sh;
   mk-my-openresty-deploy-sh = release-utils.mk-deploy-sh {
-    env = my-openresty-env.db-gw;
+    env = my-openresty-env.api-gw;
     payloadPath =  mk-my-openresty-service-systemd-setup-or-bin-sh;
     inherit innerTarballName;
     execName = "openresty";
   };
   mk-my-openresty-cleanup-sh = release-utils.mk-cleanup-sh {
-    env = my-openresty-env.db-gw;
+    env = my-openresty-env.api-gw;
     payloadPath =  mk-my-openresty-service-systemd-setup-or-bin-sh;
     inherit innerTarballName;
     execName = "openresty";
