@@ -101,15 +101,15 @@ let
           serviceConfig = {
             Type = "forking";
             ExecStartPre = ''
-              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -t -q -g "daemon on; master_process on;"
+              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -e stderr -t -q -g "daemon on; master_process on;"
             '';
             ExecStart = ''
-              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -g "daemon on; master_process on;"
+              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -e stderr -g "daemon on; master_process on;"
             '';
             ExecReload = ''
-              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -g "daemon on; master_process on;" -s reload
+              ${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -e stderr -g "daemon on; master_process on;" -s reload
             '';
-            ExecStop = "${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -s stop";
+            ExecStop = "${my-openresty-bin-sh}/bin/${my-openresty-bin-sh.name} -e stderr -s stop";
             Restart = "on-failure";
           };
         });
