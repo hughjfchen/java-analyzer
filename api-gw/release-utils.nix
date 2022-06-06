@@ -122,12 +122,12 @@ let
         ''
           {
             echo "#!/usr/bin/env bash"
-            echo "${payloadPath}/bin/${execName} ${startCmd} \"$@\""
+            echo "${payloadPath}/bin/${execName} ${startCmd} \"\$@\""
           } > ${env.runDir}/start.sh''
         ''
           {
             echo "#!/usr/bin/env bash"
-            echo "${payloadPath}/bin/${execName} ${stopCmd} \"$@\""
+            echo "${payloadPath}/bin/${execName} ${stopCmd} \"\$@\""
           } > ${env.runDir}/stop.sh''
         "chmod +x ${env.runDir}/start.sh ${env.runDir}/stop.sh"
         ''

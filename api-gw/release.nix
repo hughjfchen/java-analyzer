@@ -34,11 +34,18 @@ let
       mkdir -p $out
       mkdir -p $out/lua
       mkdir -p $out/nginx
-      mkdir -p $out/nginx/conf
       mkdir -p $out/nginx/web
       mkdir -p $out/lualib
       cp -R $src/openresty/lua/* $out/lua/
-      cp -R $src/openresty/nginx/conf/* $out/nginx/conf/
+
+      # for some nginx config diretives, there can not be an evironement variable set_by_lua_block,
+      # so we must replace them before they can be loaded by nginx
+      mkdir -p $out/nginx/conf
+      for confFile in $src/openresty/nginx/conf/*
+      do
+        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
+      done
+
       ln -s $out/lua $out/lualib/user_code
       ln -s $out/lualib $out/nginx/lualib
     '';
@@ -67,10 +74,6 @@ let
             echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
             echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
             echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
-            echo 'export OPENRESTY_SERVER_NAME=${my-openresty-config.api-gw.serverName}'
-            echo 'export OPENRESTY_LISTEN_PORT=${toString my-openresty-config.api-gw.listenPort}'
-            echo 'export OPENRESTY_RESOLVER=${my-openresty-config.api-gw.resolver}'
-            echo 'export OPENRESTY_UPLOAD_MAX_SIZE=${toString my-openresty-config.api-gw.uploadMaxSize}'
          }  >> /var/${my-openresty-env.api-gw.processUser}/openresty/env.export
       fi
       # shellcheck source=/dev/null

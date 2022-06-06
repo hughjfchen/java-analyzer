@@ -39,11 +39,11 @@
         '';
       };
       uploadMaxSize = lib.mkOption {
-        type = lib.types.int;
-        default = 1024;
-        example = 1024;
+        type = lib.types.str;
+        default = "1024M";
+        example = "1024M";
         description = ''
-          The max size for upload file in MB.
+          The max size for upload file.
         '';
       };
       resolver = lib.mkOption {
