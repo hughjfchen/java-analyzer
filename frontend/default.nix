@@ -59,8 +59,8 @@ in rec {
       ln -sf $node_modules node_modules
       cd ../..
     '';
-    # distPhase = "true";
-    # configurePhase = "ln -s $node_modules node_modules";
+    distPhase = "true";
+    configurePhase = "ln -s $node_modules node_modules";
   };
 
 }
