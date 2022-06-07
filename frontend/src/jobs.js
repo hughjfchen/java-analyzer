@@ -13,24 +13,24 @@ import {
   required,
   choices,
 } from 'react-admin';
-// import UrlFieldWithCustomLinkText from './UrlFieldWithCustomLinkText';
-// import UrlFieldWithLastFileNameAsLinkText from './UrlFieldWithLastFileNameAsLinkText';
+import UrlFieldWithCustomLinkText from './UrlFieldWithCustomLinkText';
+import UrlFieldWithLastFileNameAsLinkText from './UrlFieldWithLastFileNameAsLinkText';
 
          // <UrlFieldWithLastFileNameAsLinkText source="payload.contents.contents" download={true} label="Dump File"/>
          // <UrlFieldWithCustomLinkText source="last_update.report_url" linkText="Report" target="_blank" label="Report"/>
          // <FunctionField render={record => `${record.payload.contents.contents.split('/').pop()}`} label="Dump File"/>
          // <TextField source="payload.contents.contents" label="Dump File"/>
          // <DumpFileField source="payload.contents.contents" label="Dump File"/>
-export const JobList = props => (
-    <List {...props}>
+export const JobList = () => (
+    <List>
        <Datagrid>
          <TextField source="payload.tag" label="Parse Type"/>
-         <TextField source="payload.contents.contents" download={true} label="Dump File"/>
+         <UrlFieldWithLastFileNameAsLinkText source="payload.contents.contents" download={true} label="Dump File"/>
          <DateField source="created_at" showTime={true} locales='zh-CN' options={{hour12: false}}/>
          <DateField source="run_at" showTime={true} locales='zh-CN' options={{hour12: false}}/>
          <DateField source="updated_at" showTime={true} locales='zh-CN' options={{hour12: false}}/>
          <TextField source="status" />
-         <TextField source="last_update.report_url" linkText="Report" target="_blank" label="Report"/>
+         <UrlFieldWithCustomLinkText source="last_update.report_url" linkText="Report" target="_blank" label="Report"/>
        </Datagrid>
    </List>
 );

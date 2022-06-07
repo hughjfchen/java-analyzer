@@ -55,3 +55,6 @@ TAGS
 result
 result-*
 
+# nodejs
+node_modules
+build
