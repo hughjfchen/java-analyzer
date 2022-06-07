@@ -59,6 +59,12 @@ in rec {
     distPhase = "true";
     # following is to fix too-clever config
     configurePhase = "ln -s $node_modules node_modules";
+
+    # install
+    installPhase = ''
+      mkdir -p $out
+      cp -R $src/build/* $out/
+    '';
   };
 
 }
