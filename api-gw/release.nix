@@ -28,9 +28,9 @@ let
   my-openresty-src = nPkgs.stdenv.mkDerivation {
     src = ./.;
     name = lib.concatStringsSep "-" [ pkgName "src" ];
-    dontBuild = true;
-    dontUnpack = true;
-    installPhase = ''
+    # dontBuild = true;
+    # dontUnpack = true;
+    buildCommand = ''
       mkdir -p $out
       mkdir -p $out/lua
       mkdir -p $out/nginx
