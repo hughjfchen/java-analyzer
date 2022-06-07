@@ -51,7 +51,7 @@ in rec {
         ln -sfv "$node_modules"/.bin/"$(readlink "$x")" "$WRITABLE_NODE_MODULES"/.bin/"$(basename "$x")"
       done
       ln -sfv "$WRITABLE_NODE_MODULES" node_modules
-      yarn build
+      yarn build --offline
       rm -rf node_modules
       ln -sf $node_modules node_modules
     '';
