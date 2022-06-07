@@ -34,6 +34,13 @@ in rec {
     # following is to build a static asset, not to build a binary
     # inspired by nixpkgs/servers/gotify/ui.nix
     buildPhase = ''
+      # patch the package.json first
+      # the eslintConfig need to be removed to avoid conflict
+      temp_package_json=$(mktemp)
+      ${pkgs.jq}/bin/jq 'del(.eslintConfig)' package.json > $temp_package_json
+      cp $temp_package_json package.json
+      rm -fr $temp_package_json
+
       export HOME=$(mktemp -d)
       export WRITABLE_NODE_MODULES="$(pwd)/tmp"
       mkdir -p "$WRITABLE_NODE_MODULES"
@@ -63,7 +70,7 @@ in rec {
     # install
     installPhase = ''
       mkdir -p $out
-      cp -R $src/build/* $out/
+      cp -R build/* $out/
     '';
   };
 
