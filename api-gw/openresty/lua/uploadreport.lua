@@ -11,7 +11,7 @@ end
 form:set_timeout(5 * 60 * 1000)
 local conf = {max_size=1000 * 1000000, allow_exts={'htm', 'html', 'tgz'}}
 
-local my_my_doc_root = ngx.var.my_doc_root
+local my_my_upload_home = ngx.var.my_upload_home
 local function get_upload_home(dRoot)
 	if dRoot then
 		return dRoot..'/parsereports'
@@ -19,7 +19,7 @@ local function get_upload_home(dRoot)
 		return '/srv/parsereports'
 	end
 end
-local upload_home = get_upload_home(my_my_doc_root)
+local upload_home = get_upload_home(my_my_upload_home)
 
 local file
 local file_name
@@ -156,7 +156,7 @@ while true do
            end    
 	   report_path=file_without_ext..'/index.html'
 	end
-        local file_uri = string.gsub(report_path, my_my_doc_root, '')
+        local file_uri = string.gsub(report_path, my_my_upload_home, '')
 	local download_url = ngx.var.scheme.."://"..ngx.var.http_host..file_uri
 	local report_create_req = { job_id = kv_part["job_id"]
 	                          -- , created_at = kv_part["created_at"]

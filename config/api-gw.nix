@@ -20,6 +20,30 @@
           The document root path for openresty web content.
         '';
       };
+      uploadHome = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = "${env.api-gw.runDir}/upload";
+        example = "/var/openresty/run/upload";
+        description = ''
+          The path for openresty web upload content.
+        '';
+      };
+      logDir = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = "${env.api-gw.runDir}/log";
+        example = "/var/openresty/run/log";
+        description = ''
+          The path for openresty logging.
+        '';
+      };
+      cacheDir = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = "${env.api-gw.runDir}/cache";
+        example = "/var/openresty/run/cache";
+        description = ''
+          The path for openresty caching.
+        '';
+      };
       serverName = lib.mkOption {
         type = lib.types.str;
         default = "${env.api-gw.dnsName}";

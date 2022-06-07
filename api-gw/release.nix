@@ -44,7 +44,7 @@ let
       mkdir -p $out/nginx/conf
       for confFile in $src/openresty/nginx/conf/*
       do
-        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_RUN_DIR/${lib.strings.escape ["/"] my-openresty-env.api-gw.runDir}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
+        sed "s/\$OPENRESTY_SERVER_NAME/${my-openresty-config.api-gw.serverName}/g; s/\$OPENRESTY_LISTEN_PORT/${toString my-openresty-config.api-gw.listenPort}/g; s/\$OPENRESTY_RESOLVER/${my-openresty-config.api-gw.resolver}/g; s/\$OPENRESTY_RUN_DIR/${lib.strings.escape ["/"] my-openresty-env.api-gw.runDir}/g; s/\$OPENRESTY_LOG_DIR/${lib.strings.escape ["/"] my-openresty-config.api-gw.logDir}/g; s/\$OPENRESTY_CACHE_DIR/${lib.strings.escape ["/"] my-openresty-config.api-gw.cacheDir}/g; s/\$OPENRESTY_UPLOAD_MAX_SIZE/${toString my-openresty-config.api-gw.uploadMaxSize}/g" $confFile > $out/nginx/conf/$(basename $confFile)
       done
 
       ln -s $out/lua $out/lualib/user_code
@@ -62,6 +62,7 @@ let
         echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
         echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
         echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
+        echo 'export OPENRESTY_UPLOAD_HOME=${my-openresty-config.api-gw.uploadHome}'
       }  > $out/env.export
 
     '';
@@ -72,10 +73,16 @@ let
     name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
     runtimeInputs = [ nPkgs.openresty ];
     text = ''
-      [ ! -d ${my-openresty-env.api-gw.runDir}/log ] && mkdir -p ${my-openresty-env.api-gw.runDir}/log && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-env.api-gw.runDir}/log
-      [ ! -d ${my-openresty-env.api-gw.runDir}/client_body ] && mkdir -p ${my-openresty-env.api-gw.runDir}/client_body && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-env.api-gw.runDir}/client_body
-      [ ! -d ${my-openresty-config.api-gw.docRoot}/dumpfiles ] && mkdir -p ${my-openresty-config.api-gw.docRoot}/dumpfiles && chown -R nobody:nogroup ${my-openresty-config.api-gw.docRoot}/dumpfiles
-      [ ! -d ${my-openresty-config.api-gw.docRoot}/parsereports ] && mkdir -p ${my-openresty-config.api-gw.docRoot}/parsereports && chown -R nobody:nogroup ${my-openresty-config.api-gw.docRoot}/parsereports
+      # create runtime dirs
+
+      # for log dir
+      [ ! -d ${my-openresty-config.api-gw.logDir} ] && mkdir -p ${my-openresty-config.api-gw.logDir} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.logDir}
+      # for cache dir
+      [ ! -d ${my-openresty-config.api-gw.cacheDir} ] && mkdir -p ${my-openresty-config.api-gw.cacheDir} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.cacheDir}
+      # for upload files, the owner of this directory must be nobody
+      [ ! -d ${my-openresty-config.api-gw.uploadHome} ] && mkdir -p ${my-openresty-config.api-gw.uploadHome} && chown -R nobody:nogroup ${my-openresty-config.api-gw.uploadHome}
+      # link the docRoot to the web directory of the src
+      [ ! -e ${my-openresty-config.api-gw.docRoot} ] && ln -s ${my-openresty-src}/nginx/web ${my-openresty-config.api-gw.docRoot} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.docRoot}
       # shellcheck source=/dev/null
       . ${my-openresty-src}/env.export
       openresty -p "${my-openresty-src}/nginx" -c "${my-openresty-src}/nginx/conf/nginx.conf" "$@"
