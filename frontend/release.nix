@@ -23,8 +23,11 @@ let
   # the frontend, comment out for now.
   my-frontend-distributable = (import ../frontend/default.nix { }).java-analyzer-frontend.overrideAttrs (oldAttrs:
     { buildPhase = ''
-                   rm -fr .env.production.local .env.local .env.production
-                   echo "REACT_APP_BASE_URL=http://${my-openresty-config.api-gw.serverName}:${toString my-openresty-config.api-gw.listenPort}" > .env.production
+                   # following not working, do not know why
+                   # rm -fr .env.production.local .env.local .env.production
+                   # echo "REACT_APP_BASE_URL=http://${my-openresty-config.api-gw.serverName}:${toString my-openresty-config.api-gw.listenPort}" > .env.production
+                   sed -i 's/{process.env.REACT_APP_BASE_URL}/http:\/\/${my-openresty-config.api-gw.serverName}:${toString my-openresty-config.api-gw.listenPort}/g' src/dataprovider.js
+                   sed -i 's/{process.env.REACT_APP_BASE_URL}/http:\/\/${my-openresty-config.api-gw.serverName}:${toString my-openresty-config.api-gw.listenPort}/g' src/auth.js
                  '' + oldAttrs.buildPhase;
     });
 
