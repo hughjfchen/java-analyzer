@@ -56,6 +56,8 @@ let
                          };
 
     };
+    config.systemd.services.rabbitmq.environment = config.systemd.services.rabbitmq.environment
+                                                   // { RABBITMQ_LOG_BASE = "${my-messaging-env.messaging.runDir}"; };
   })).config.systemd.units."rabbitmq.service".unit;
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
