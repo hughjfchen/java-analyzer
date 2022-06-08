@@ -56,17 +56,17 @@ let
 
       # prepare the export environment variables
       {
-        echo 'export DB_HOST=${my-openresty-config.db.host}'
-        echo 'export DB_PORT=${toString my-openresty-config.db.port}'
-        echo 'export DB_USER=${my-openresty-config.db.apiSchemaUser}'
-        echo 'export DB_PASS=${my-openresty-config.db.apiSchemaPassword}'
-        echo 'export DB_NAME=${my-openresty-config.db.database}'
-        echo 'export DB_SCHEMA=${my-openresty-config.db.apiSchema}'
-        echo 'export JWT_SECRET=${my-openresty-config.db.jwtSecret}'
-        echo 'export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}'
-        echo 'export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}'
-        echo 'export OPENRESTY_DOC_ROOT=${my-openresty-config.api-gw.docRoot}'
-        echo 'export OPENRESTY_UPLOAD_HOME=${my-openresty-config.api-gw.uploadHome}'
+        echo "export DB_HOST=${my-openresty-config.db.host}"
+        echo "export DB_PORT=${toString my-openresty-config.db.port}"
+        echo "export DB_USER=${my-openresty-config.db.apiSchemaUser}"
+        echo "export DB_PASS=${my-openresty-config.db.apiSchemaPassword}"
+        echo "export DB_NAME=${my-openresty-config.db.database}"
+        echo "export DB_SCHEMA=${my-openresty-config.db.apiSchema}"
+        echo "export JWT_SECRET=${my-openresty-config.db.jwtSecret}"
+        echo "export POSTGREST_HOST=${my-openresty-config.db-gw.server-host}"
+        echo "export POSTGREST_PORT=${toString my-openresty-config.db-gw.server-port}"
+        echo "export OPENRESTY_DOC_ROOT=$out/nginx/web"
+        echo "export OPENRESTY_UPLOAD_HOME=${my-openresty-config.api-gw.uploadHome}"
       }  > $out/env.export
 
     '';
@@ -85,8 +85,6 @@ let
       [ ! -d ${my-openresty-config.api-gw.cacheDir} ] && mkdir -p ${my-openresty-config.api-gw.cacheDir} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.cacheDir}
       # for upload files, the owner of this directory must be nobody
       [ ! -d ${my-openresty-config.api-gw.uploadHome} ] && mkdir -p ${my-openresty-config.api-gw.uploadHome} && chown -R nobody:nogroup ${my-openresty-config.api-gw.uploadHome}
-      # link the docRoot to the web directory of the src
-      [ ! -e ${my-openresty-config.api-gw.docRoot} ] && ln -s ${my-openresty-src}/nginx/web ${my-openresty-config.api-gw.docRoot} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.docRoot}
       # shellcheck source=/dev/null
       . ${my-openresty-src}/env.export
       openresty -p "${my-openresty-src}/nginx" -c "${my-openresty-src}/nginx/conf/nginx.conf" "$@"

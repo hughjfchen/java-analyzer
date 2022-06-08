@@ -15,7 +15,13 @@ let
   release-utils = import ./release-utils.nix { inherit lib; pkgs = nPkgs; };
 
   # the deployment env
-  my-messaging-env = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+  my-messaging-env-orig = (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+  # NOTICE: the rabbitmq process user must be rabbitmq
+  my-messaging-env = lib.attrsets.recursiveUpdate my-messaging-env-orig { messaging.processUser = "rabbitmq";
+                                                            messaging.runDir = "/var/rabbitmq/run";
+                                                            messaging.dataDir = "/var/rabbitmq/data";
+                                                          };
+
   # the config
   my-messaging-config = (import ../config/site/${site}/phase/${phase}/config.nix { pkgs = nPkgs; env = my-messaging-env; }).config;
   
@@ -25,17 +31,17 @@ let
     config.services.rabbitmq = {
       enable = true;
       package = nPkgs.rabbitmq-server;
-      listenAddress = "";
+      listenAddress = "${my-messaging-env.messaging.ipAddress}";
       port = 5672;
       dataDir = "${my-messaging-env.db.dataDir}";
       cookie = "";
-      configItems = { "num_acceptors.tcp" = 10;
-                     "channel_max" = 2047;
-                    "max_message_size" = 134217728;
+      configItems = { "num_acceptors.tcp" = "10";
+                     "channel_max" = "2047";
+                    "max_message_size" = "134217728";
                     "log.file.level" = "info";
                     "default_user" = "${my-messaging-env.messaging.processUser}";
                     "default_pass" = "Passw0rd";
-                    "default_user_tags.administrator" = true;
+                    "default_user_tags.administrator" = "true";
                     "default_permissions.configure" = ".*";
                     "default_permissions.read" = ".*";
                     "default_permissions.write" = ".*";

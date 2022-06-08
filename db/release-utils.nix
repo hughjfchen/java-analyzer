@@ -152,11 +152,32 @@ let
       # this script need to be run with root or having sudo permission
       [ $EUID -ne 0 ] && ! sudo -v >/dev/null 2>&1 && echo "need to run with root or sudo" && exit 127
 
+      echo "BIG WARNING!!!"
+      echo "This script will also ERASE all data generated during the program running."
+      echo "That means all data generated during the program running will be lost and cannot be restored."
+      echo "Think twice before you hit ENTER. You have been warned."
+      echo "If your are looking for how to start/start the program,"
+      echo "Just use following command:"
+      ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
+        if [ -e ${payloadPath}/bin/setup-systemd-units ]; then
+           unitName=$(awk 'BEGIN { FS="\"" } /unitsToStart\+\=\(/ {print $2}' ${payloadPath}/bin/setup-systemd-units)
+           echo "To stop - sudo systemctl stop $unitName"
+           echo "To start - sudo systemctl start $unitName"
+        fi''] else [''
+          if [ -e ${env.runDir}/stop.sh ]; then
+            echo "To stop - ${env.runDir}/stop.sh"
+          fi
+          if [ -e ${env.runDir}/start.sh ]; then
+            echo "To start - ${env.runDir}/start.sh"
+          fi
+            ''])}
+
+      read -p "Continue? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 129
+
       # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
       # we just stop it before doing the cleanup
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
         if [ -e ${payloadPath}/bin/setup-systemd-units ]; then
-           unitName=$(awk 'BEGIN { FS="\"" } /unitsToStart\+\=\(/ {print $2}' ${payloadPath}/bin/setup-systemd-units)
            sudo systemctl stop $unitName
         fi''] else
         [ "[ -e ${env.runDir}/stop.sh ] && ${env.runDir}/stop.sh" ])}
