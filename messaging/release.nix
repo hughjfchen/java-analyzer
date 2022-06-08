@@ -56,6 +56,9 @@ let
                          };
 
     };
+    # Even we set the log directory in the config file, we still need to set the environment variable
+    # Or rabbitmq will complain cannot open the /var/logs/rabbitmqxx.log file
+    # So we quickly fix it by adding an environment variable
     config.systemd.services.rabbitmq.environment = lib.mkAfter { RABBITMQ_LOG_BASE = "${my-messaging-env.messaging.runDir}"; };
   })).config.systemd.units."rabbitmq.service".unit;
 
