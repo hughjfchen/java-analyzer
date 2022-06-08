@@ -38,6 +38,7 @@ let
       configItems = { "num_acceptors.tcp" = "10";
                      "channel_max" = "2047";
                     "max_message_size" = "134217728";
+                    "log.dir" = "${my-messaging-config.messaging.runDir}/log";
                     "log.file.level" = "info";
                     "default_user" = "${my-messaging-env.messaging.processUser}";
                     "default_pass" = "Passw0rd";
