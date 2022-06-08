@@ -33,7 +33,7 @@ let
       package = nPkgs.rabbitmq-server;
       listenAddress = "${my-messaging-env.messaging.ipAddress}";
       port = 5672;
-      dataDir = "${my-messaging-env.db.dataDir}";
+      dataDir = "${my-messaging-env.messaging.dataDir}";
       cookie = "";
       configItems = { "num_acceptors.tcp" = "10";
                      "channel_max" = "2047";
@@ -62,7 +62,7 @@ let
 in rec {
   inherit nativePkgs pkgs my-messaging-config;
 
-  mk-my-rabbitmq-service-systemd-setup-or-bin-sh = if my-messaging-env.db.isSystemdService then
+  mk-my-rabbitmq-service-systemd-setup-or-bin-sh = if my-messaging-env.messaging.isSystemdService then
     (nPkgs.setupSystemdUnits {
       namespace = pkgName;
       units = serviceNameUnit;
@@ -71,13 +71,13 @@ in rec {
     { };
   mk-my-rabbitmq-reference = nPkgs.writeReferencesToFile mk-my-rabbitmq-service-systemd-setup-or-bin-sh;
   mk-my-rabbitmq-deploy-sh = release-utils.mk-deploy-sh {
-    env = my-messaging-env.db;
+    env = my-messaging-env.messaging;
     payloadPath =  mk-my-rabbitmq-service-systemd-setup-or-bin-sh;
     inherit innerTarballName;
     execName = "rabbitmq";
   };
   mk-my-rabbitmq-cleanup-sh = release-utils.mk-cleanup-sh {
-    env = my-messaging-env.db;
+    env = my-messaging-env.messaging;
     payloadPath =  mk-my-rabbitmq-service-systemd-setup-or-bin-sh;
     inherit innerTarballName;
     execName = "rabbitmq";
