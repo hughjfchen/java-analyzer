@@ -21,7 +21,7 @@ let
   my-openresty-config = (import ../config/site/${site}/phase/${phase}/config.nix { pkgs = nPkgs; env = my-openresty-env; }).config;
 
   # the frontend, comment out for now.
-  #my-frontend-distributable = (import ../frontend/release.nix { pkgs = nPkgs; inherit releasePhase releaseHost genSystemdUnit userName dockerOnTarget; }).my-frontend-distributable;
+  my-frontend-distributable = import ../frontend/release.nix { inherit site phase; };
 
   # my services dependencies
   # following define the service
@@ -37,6 +37,10 @@ let
       mkdir -p $out/nginx/web
       mkdir -p $out/lualib
       cp -R $src/openresty/lua/* $out/lua/
+
+      # put the frontend under the nginx web directory
+      mkdir -p $out/nginx/web
+      cp -R ${my-frontend-distributable}/* $out/nginx/web/
 
       # for some nginx config diretives, there can not be an evironement variable set_by_lua_block,
       # so we must replace them before they can be loaded by nginx
