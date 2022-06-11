@@ -101,7 +101,7 @@ in rec {
       { };
   mk-my-postgresql-service-systemd-unsetup-or-bin-sh =
     if my-db-env.db.isSystemdService then
-      (release-utils.unsetup-systemd-units {
+      (release-utils.unsetup-systemd-service {
         namespace = pkgName;
         units = serviceNameUnit;
       })
