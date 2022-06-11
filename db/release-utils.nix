@@ -2,6 +2,65 @@
 
 let
 
+  # unsetup the systemd service
+  # inspired by setup-systemd-service
+  unsetup-systemd-service =
+    { units # : AttrSet String (Either Path { path : Path, wanted-by : [ String ] })
+    # ^ A set whose names are unit names and values are
+    # either paths to the corresponding unit files or a set
+    # containing the path and the list of units this unit
+    # should be wanted-by (none by default).
+    #
+    # The names should include the unit suffix
+    # (e.g. ".service")
+    , namespace # : String
+    # The namespace for the unit files, to allow for
+    # multiple independent unit sets managed by
+    # `setupSystemdUnits`.
+    }:
+    let
+      remove-unit-snippet = name: file: ''
+        oldUnit=$(readlink -f "$unitDir/${name}" || echo "$unitDir/${name}")
+        if [ -f "$oldUnit" ]; then
+          unitsToStop+=("${name}")
+          unitFilesToRemove+=("$unitDir/${name}")
+          ${
+            lib.concatStringsSep "\n" (map (unit: ''
+              unitWantsToRemove+=("$unitDir/${unit}.wants")
+            '') file.wanted-by or [ ])
+          }
+        fi
+      '';
+    in pkgs.writeScriptBin "unsetup-systemd-units" ''
+      #!${pkgs.bash}/bin/bash -e
+      export PATH=${pkgs.coreutils}/bin:${pkgs.systemd}/bin
+
+      unitDir=/etc/systemd/system
+      if [ ! -w "$unitDir" ]; then
+        unitDir=/nix/var/nix/profiles/default/lib/systemd/system
+        mkdir -p "$unitDir"
+      fi
+      declare -a unitsToStop unitFilesToRemove unitWantsToRemove
+
+      ${lib.concatStringsSep "\n"
+      (lib.mapAttrsToList remove-unit-snippet units)}
+      if [ ''${#unitsToStop[@]} -ne 0 ]; then
+        echo "Stopping unit(s) ''${unitsToStop[@]}" >&2
+        systemctl stop "''${unitsToStop[@]}"
+        if [ ''${#unitWantsToRemove[@]} -ne 0 ]; then
+           echo "Removing unit wants-by file(s) ''${unitWantsToRemove[@]}" >&2
+           rm -fr "''${unitWantsToRemove[@]}"
+        fi
+        echo "Removing unit file(s) ''${unitFilesToRemove[@]}" >&2
+        rm -fr "''${unitFilesToRemove[@]}"
+      fi
+      if [ -e /etc/systemd-static/${namespace} ]; then
+         echo "remove systemd static namespace ${namespace}"
+         rm -fr /etc/systemd-static/${namespace}
+      fi
+      systemctl daemon-reload
+    '';
+
   # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
   mk-release-packer = { referencePath # : Path
     # paths to the corresponding reference file
@@ -83,7 +142,7 @@ let
     '';
   mk-deploy-sh =
     { env # : AttrsSet the environment for the deployment target machine
-    , payloadPath # : Path the nix path to the program service or wrapping script
+    , payloadPath # : Path the nix path to the script which sets up the systemd service or wrapping script
     , innerTarballName # : String the tarball file name for the inner package tar
     , execName # : String the executable file name
     , startCmd ? "" # : String command line to start the program, default ""
@@ -142,7 +201,7 @@ let
 
     '';
   mk-cleanup-sh = { env # the environment for the deployment target machine
-    , payloadPath # the nix path to the program service or wrapping script
+    , payloadPath # the nix path to the script which unsets up the systemd service or wrapping script
     , innerTarballName # : String the tarball file name for the inner package tar
     , execName # : String the executable file name
     }:
@@ -159,10 +218,11 @@ let
       echo "If your are looking for how to start/start the program,"
       echo "Just use following command:"
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
-        if [ -e ${payloadPath}/bin/setup-systemd-units ]; then
-           unitName=$(awk 'BEGIN { FS="\"" } /unitsToStart\+\=\(/ {print $2}' ${payloadPath}/bin/setup-systemd-units)
-           echo "To stop - sudo systemctl stop $unitName"
-           echo "To start - sudo systemctl start $unitName"
+        if [ -e ${payloadPath}/bin/unsetup-systemd-units ]; then
+           serviceNames=$(awk 'BEGIN { FS="\"" } /unitsToStop\+\=\(/ {print $2}' ${payloadPath}/bin/unsetup-systemd-units)
+           echo "To stop - sudo systemctl stop <service-name>"
+           echo "To start - sudo systemctl start <service-name>"
+           echo "Where <service-name> is one of $serviceNames"
         fi''] else [''
           if [ -e ${env.runDir}/stop.sh ]; then
             echo "To stop - ${env.runDir}/stop.sh"
@@ -170,15 +230,15 @@ let
           if [ -e ${env.runDir}/start.sh ]; then
             echo "To start - ${env.runDir}/start.sh"
           fi
-            ''])}
+        ''])}
 
       read -p "Continue? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 129
 
       # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
       # we just stop it before doing the cleanup
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
-        if [ -e ${payloadPath}/bin/setup-systemd-units ]; then
-           sudo systemctl stop $unitName
+        if [ -e ${payloadPath}/bin/unsetup-systemd-units ]; then
+           sudo ${payloadPath}/bin/unsetup-systemd-units
         fi''] else
         [ "[ -e ${env.runDir}/stop.sh ] && ${env.runDir}/stop.sh" ])}
 
@@ -190,13 +250,19 @@ let
       done
 
       # do we need to delete the program and all its dependencies in /nix/store?
-      # we do not do that for now
-      # sudo rm -fr /nix/store/xxx ( maybe a file list for the package and its references )
+      # we will do that for now
+      if [ -f "./${innerTarballName}" ]; then
+        tar zPtvf "./${innerTarballName}"|awk '{print $NF}'|grep '/nix/store/'|awk -F'/' '{print "/nix/store/" $4}'|sort|uniq|xargs sudo rm -fr
+      else
+        echo "cannot find the release tarball ./${innerTarballName}, skip cleaning the distribute files."
+      fi
 
       # well, shall we remove the user and group? maybe not
-      # we do not do that for now.
-      # getent passwd "${env.processUser}" > /dev/null && sudo userdel -fr "${env.processUser}"
-      # getent group "${env.processUser}" > /dev/null && sudo groupdel -f "${env.processUser}"
+      # we will do that for now.
+      getent passwd "${env.processUser}" > /dev/null && sudo userdel -fr "${env.processUser}"
+      getent group "${env.processUser}" > /dev/null && sudo groupdel -f "${env.processUser}"
 
     '';
-in { inherit mk-release-packer mk-deploy-sh mk-cleanup-sh; }
+in {
+  inherit unsetup-systemd-service mk-release-packer mk-deploy-sh mk-cleanup-sh;
+}
