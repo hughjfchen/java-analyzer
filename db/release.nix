@@ -107,8 +107,17 @@ in rec {
       })
     else
       { };
-  mk-my-postgresql-reference = nPkgs.writeReferencesToFile
-    mk-my-postgresql-service-systemd-setup-or-bin-sh;
+  # following derivation just to make sure the setup and unsetup will
+  # be packed into the distribute tarball.
+  setup-and-unsetup-or-bin-sh = nPkgs.symlinkJoin {
+    name = "my-postgrest-setup-and-unsetup";
+    pathes = [
+      mk-my-postgresql-service-systemd-setup-or-bin-sh
+      mk-my-postgresql-service-systemd-unsetup-or-bin-sh
+    ];
+  };
+  mk-my-postgresql-reference =
+    nPkgs.writeReferencesToFile setup-and-unsetup-or-bin-sh;
   mk-my-postgresql-deploy-sh = release-utils.mk-deploy-sh {
     env = my-db-env.db;
     payloadPath = mk-my-postgresql-service-systemd-setup-or-bin-sh;
