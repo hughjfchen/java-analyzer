@@ -215,7 +215,7 @@ let
       echo "BIG WARNING!!!"
       echo "This script will also ERASE all data generated during the program running."
       echo "That means all data generated during the program running will be lost and cannot be restored."
-      echo "Think twice before you hit ENTER. You have been warned."
+      echo "Think twice before you answer Y nad hit ENTER. You have been warned."
       echo "If your are looking for how to start/start the program,"
       echo "Just use following command:"
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
@@ -224,6 +224,9 @@ let
            echo "To stop - sudo systemctl stop <service-name>"
            echo "To start - sudo systemctl start <service-name>"
            echo "Where <service-name> is one of $serviceNames"
+        else
+           echo "service not installed yet or installed with a previous version"
+           echo "please run the deploy script first."
         fi''] else [''
           if [ -e ${env.runDir}/stop.sh ]; then
             echo "To stop - ${env.runDir}/stop.sh"
@@ -240,6 +243,8 @@ let
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
         if [ -e ${payloadPath}/bin/unsetup-systemd-units ]; then
            sudo ${payloadPath}/bin/unsetup-systemd-units
+        else
+           echo "service not installed yet or installed with a previous version, skip the unsetup step."
         fi''] else
         [ "[ -e ${env.runDir}/stop.sh ] && ${env.runDir}/stop.sh" ])}
 

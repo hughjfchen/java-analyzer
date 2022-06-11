@@ -118,15 +118,16 @@ in rec {
   };
   mk-my-postgresql-reference =
     nPkgs.writeReferencesToFile setup-and-unsetup-or-bin-sh;
+
   mk-my-postgresql-deploy-sh = release-utils.mk-deploy-sh {
     env = my-db-env.db;
-    payloadPath = mk-my-postgresql-service-systemd-setup-or-bin-sh;
+    payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "postgres";
   };
   mk-my-postgresql-cleanup-sh = release-utils.mk-cleanup-sh {
     env = my-db-env.db;
-    payloadPath = mk-my-postgresql-service-systemd-unsetup-or-bin-sh;
+    payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "postgres";
   };
