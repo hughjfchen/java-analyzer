@@ -111,7 +111,7 @@ in rec {
   # be packed into the distribute tarball.
   setup-and-unsetup-or-bin-sh = nPkgs.symlinkJoin {
     name = "my-postgrest-setup-and-unsetup";
-    pathes = [
+    paths = [
       mk-my-postgresql-service-systemd-setup-or-bin-sh
       mk-my-postgresql-service-systemd-unsetup-or-bin-sh
     ];
