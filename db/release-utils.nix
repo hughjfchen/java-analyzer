@@ -55,7 +55,7 @@ let
         rm -fr "''${unitFilesToRemove[@]}"
       fi
       if [ -e /etc/systemd-static/${namespace} ]; then
-         echo "remove systemd static namespace ${namespace}"
+         echo "removing systemd static namespace ${namespace}"
          rm -fr /etc/systemd-static/${namespace}
       fi
       systemctl daemon-reload
