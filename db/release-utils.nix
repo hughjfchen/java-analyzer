@@ -212,41 +212,52 @@ let
       # this script need to be run with root or having sudo permission
       [ $EUID -ne 0 ] && ! sudo -v >/dev/null 2>&1 && echo "need to run with root or sudo" && exit 127
 
+      # check to make sure we are running this cleanup script after deploy script
+      alreadyDeployed=""
+      ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
+        if [ -e ${payloadPath}/bin/unsetup-systemd-units ]; then
+           alreadyDeployed="true"
+        else
+           alreadyDeployed="false"
+        fi''] else [''
+          if [ -e ${env.runDir}/start.sh ] && [ -e ${env.runDir}/stop.sh ]; then
+             newBinSh=$(awk '/exec/ {print $2}' "${env.runDir}/start.sh")
+             if [ -e "$newBinSh" ]; then
+                alreadyDeployed="true"
+             else
+                alreadyDeployed="false"
+             fi
+          else
+             alreadyDeployed="false"
+          fi
+        ''])}
+      [ $alreadyDeployed == "false" ] && echo "service not installed yet or installed with a previous version. please run the deploy script first." && exit 126
+
+      # ok, the deploy script had been run now we can run the cleanup script
       echo "BIG WARNING!!!"
       echo "This script will also ERASE all data generated during the program running."
       echo "That means all data generated during the program running will be lost and cannot be restored."
       echo "Think twice before you answer Y nad hit ENTER. You have been warned."
       echo "If your are looking for how to start/start the program,"
-      echo "Just use following command:"
+      echo "Refer to the following command"
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
-        if [ -e ${payloadPath}/bin/unsetup-systemd-units ]; then
-           serviceNames=$(awk 'BEGIN { FS="\"" } /unitsToStop\+\=\(/ {print $2}' ${payloadPath}/bin/unsetup-systemd-units)
-           echo "To stop - sudo systemctl stop <service-name>"
-           echo "To start - sudo systemctl start <service-name>"
-           echo "Where <service-name> is one of $serviceNames"
-        else
-           echo "service not installed yet or installed with a previous version"
-           echo "please run the deploy script first."
-        fi''] else [''
-          if [ -e ${env.runDir}/stop.sh ]; then
-            echo "To stop - ${env.runDir}/stop.sh"
-          fi
-          if [ -e ${env.runDir}/start.sh ]; then
-            echo "To start - ${env.runDir}/start.sh"
-          fi
-        ''])}
+        serviceNames=$(awk 'BEGIN { FS="\"" } /unitsToStop\+\=\(/ {print $2}' ${payloadPath}/bin/unsetup-systemd-units)
+        echo "To stop - sudo systemctl stop <service-name>"
+        echo "To start - sudo systemctl start <service-name>"
+        echo "Where <service-name> is one of $serviceNames"
+      ''] else [''
+        echo "To stop - ${env.runDir}/stop.sh"
+        echo "To start - ${env.runDir}/start.sh"
+      ''])}
 
       read -p "Continue? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 129
 
       # how do we unsetup the systemd unit? we do not unsetup the systemd service for now
       # we just stop it before doing the cleanup
       ${lib.concatStringsSep "\n" (if env.isSystemdService then [''
-        if [ -e ${payloadPath}/bin/unsetup-systemd-units ]; then
-           sudo ${payloadPath}/bin/unsetup-systemd-units
-        else
-           echo "service not installed yet or installed with a previous version, skip the unsetup step."
-        fi''] else
-        [ "[ -e ${env.runDir}/stop.sh ] && ${env.runDir}/stop.sh" ])}
+        sudo ${payloadPath}/bin/unsetup-systemd-units
+      ''] else
+        [ "${env.runDir}/stop.sh" ])}
 
       for dirToRm in "${env.runDir}" "${env.dataDir}"
       do
