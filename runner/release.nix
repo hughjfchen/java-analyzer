@@ -16,18 +16,38 @@ let
   ];
 
   # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
-  release-utils = import ./release-utils.nix {
+  deploy-packer = import (builtins.fetchGit {
+    url = "https://github.com/hughjfchen/deploy-packer";
+  }) {
     inherit lib;
     pkgs = nPkgs;
   };
 
   # the deployment env
-  my-runner-env =
-    (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+  my-runner-env = (import
+    (builtins.fetchGit { url = "https://github.com/hughjfchen/deploy-env"; }) {
+      pkgs = nPkgs;
+      modules = [
+        ../env/site/${site}/phase/${phase}/db.nix
+        ../env/site/${site}/phase/${phase}/db-gw.nix
+        ../env/site/${site}/phase/${phase}/api-gw.nix
+        ../env/site/${site}/phase/${phase}/messaging.nix
+        ../env/site/${site}/phase/${phase}/runner.nix
+      ];
+    }).env;
 
   # dependent config
-  my-runner-config = (import ../config/site/${site}/phase/${phase}/config.nix {
+  my-runner-config = (import (builtins.fetchGit {
+    url = "https://github.com/hughjfchen/deploy-config";
+  }) {
     pkgs = nPkgs;
+    modules = [
+      ../config/site/${site}/phase/${phase}/db.nix
+      ../config/site/${site}/phase/${phase}/db-gw.nix
+      ../config/site/${site}/phase/${phase}/api-gw.nix
+      ../config/site/${site}/phase/${phase}/messaging.nix
+      ../config/site/${site}/phase/${phase}/runner.nix
+    ];
     env = my-runner-env;
   }).config;
 
@@ -106,7 +126,7 @@ in rec {
 
   mk-my-runner-service-systemd-unsetup-or-bin-sh =
     if my-runner-env.runner.isSystemdService then
-      (release-utils.unsetup-systemd-service {
+      (deploy-packer.unsetup-systemd-service {
         namespace = pkgName;
         units = serviceNameUnit;
       })
@@ -124,7 +144,7 @@ in rec {
 
   mk-my-runner-reference =
     nPkgs.writeReferencesToFile setup-and-unsetup-or-bin-sh;
-  mk-my-runner-deploy-sh = release-utils.mk-deploy-sh {
+  mk-my-runner-deploy-sh = deploy-packer.mk-deploy-sh {
     env = my-runner-env.runner;
     payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
@@ -132,13 +152,13 @@ in rec {
     startCmd = "--command=Start";
     stopCmd = "--command=Stop";
   };
-  mk-my-runner-cleanup-sh = release-utils.mk-cleanup-sh {
+  mk-my-runner-cleanup-sh = deploy-packer.mk-cleanup-sh {
     env = my-runner-env.runner;
     payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "${my-runner-bin-sh.name}";
   };
-  mk-my-release-packer = release-utils.mk-release-packer {
+  mk-my-release-packer = deploy-packer.mk-release-packer {
     referencePath = mk-my-runner-reference;
     component = pkgName;
     inherit site phase innerTarballName;
