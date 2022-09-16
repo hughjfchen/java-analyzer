@@ -138,7 +138,7 @@ in rec {
         units = serviceNameUnit;
       })
     else
-      "";
+      my-runner-bin-sh;
   # following derivation just to make sure the setup and unsetup will
   # be packed into the distribute tarball.
   setup-and-unsetup-or-bin-sh = nPkgs.symlinkJoin {
