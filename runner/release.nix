@@ -19,7 +19,7 @@ let
   deploy-packer = import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-packer";
     rev = "3a37db594facedf415e7490d963a531747749a0b";
-    sha256 = "0r4y9nvmjkx7xf79m2i8qyrs7gp188adkfggg1p1q8vxfv0y4ilj";
+    # sha256 = "0r4y9nvmjkx7xf79m2i8qyrs7gp188adkfggg1p1q8vxfv0y4ilj";
   }) {
     inherit lib;
     pkgs = nPkgs;
@@ -29,7 +29,7 @@ let
   my-runner-env = (import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-env";
     rev = "a82e45e4a4968ec8ecc242cca00e67cc5c1f875b";
-    sha256 = "159jxp47572whi2kpykl2mpawhx70n51jmmxm1ga6xq6a48vpqpy";
+    # sha256 = "159jxp47572whi2kpykl2mpawhx70n51jmmxm1ga6xq6a48vpqpy";
   }) {
     pkgs = nPkgs;
     modules = [
@@ -45,7 +45,7 @@ let
   my-runner-config = (import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-config";
     rev = "994fcf8c57fdcc2b1c88f5c724ee7b7d09f48337";
-    sha256 = "17kffymnv0fi6fwzc70ysv1w1ry99cq6h8440jv2x9hsd9vrzs3q";
+    # sha256 = "17kffymnv0fi6fwzc70ysv1w1ry99cq6h8440jv2x9hsd9vrzs3q";
   }) {
     pkgs = nPkgs;
     modules = [
