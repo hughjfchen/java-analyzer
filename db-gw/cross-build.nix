@@ -6,6 +6,4 @@ defaultPlatformProject.pkgs.lib.mapAttrs (_: pkgs: rec {
   recurseForDerivations = true;
 
   inherit pkgs;
-
 }) toBuild
-
