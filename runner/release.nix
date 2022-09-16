@@ -18,27 +18,31 @@ let
   # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
   deploy-packer = import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-packer";
+    ref = "master";
   }) {
     inherit lib;
     pkgs = nPkgs;
   };
 
   # the deployment env
-  my-runner-env = (import
-    (builtins.fetchGit { url = "https://github.com/hughjfchen/deploy-env"; }) {
-      pkgs = nPkgs;
-      modules = [
-        ../env/site/${site}/phase/${phase}/db.nix
-        ../env/site/${site}/phase/${phase}/db-gw.nix
-        ../env/site/${site}/phase/${phase}/api-gw.nix
-        ../env/site/${site}/phase/${phase}/messaging.nix
-        ../env/site/${site}/phase/${phase}/runner.nix
-      ];
-    }).env;
+  my-runner-env = (import (builtins.fetchGit {
+    url = "https://github.com/hughjfchen/deploy-env";
+    ref = "master";
+  }) {
+    pkgs = nPkgs;
+    modules = [
+      ../env/site/${site}/phase/${phase}/db.nix
+      ../env/site/${site}/phase/${phase}/db-gw.nix
+      ../env/site/${site}/phase/${phase}/api-gw.nix
+      ../env/site/${site}/phase/${phase}/messaging.nix
+      ../env/site/${site}/phase/${phase}/runner.nix
+    ];
+  }).env;
 
   # dependent config
   my-runner-config = (import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-config";
+    ref = "master";
   }) {
     pkgs = nPkgs;
     modules = [
