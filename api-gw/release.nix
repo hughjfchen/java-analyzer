@@ -16,21 +16,47 @@ let
   ];
 
   # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
-  release-utils = import ./release-utils.nix {
+  deploy-packer = import (builtins.fetchGit {
+    url = "https://github.com/hughjfchen/deploy-packer";
+    rev = "3a37db594facedf415e7490d963a531747749a0b";
+    # sha256 = "0r4y9nvmjkx7xf79m2i8qyrs7gp188adkfggg1p1q8vxfv0y4ilj";
+  }) {
     inherit lib;
     pkgs = nPkgs;
   };
 
   # the deployment env
-  my-openresty-env =
-    (import ../env/site/${site}/phase/${phase}/env.nix { pkgs = nPkgs; }).env;
+  my-openresty-env = (import (builtins.fetchGit {
+    url = "https://github.com/hughjfchen/deploy-env";
+    rev = "a82e45e4a4968ec8ecc242cca00e67cc5c1f875b";
+    # sha256 = "159jxp47572whi2kpykl2mpawhx70n51jmmxm1ga6xq6a48vpqpy";
+  }) {
+    pkgs = nPkgs;
+    modules = [
+      ../env/site/${site}/phase/${phase}/db.nix
+      ../env/site/${site}/phase/${phase}/db-gw.nix
+      ../env/site/${site}/phase/${phase}/api-gw.nix
+      ../env/site/${site}/phase/${phase}/messaging.nix
+      ../env/site/${site}/phase/${phase}/runner.nix
+    ];
+  }).env;
 
-  # dependent config
-  my-openresty-config =
-    (import ../config/site/${site}/phase/${phase}/config.nix {
-      pkgs = nPkgs;
-      env = my-openresty-env;
-    }).config;
+  # the config
+  my-openresty-config = (import (builtins.fetchGit {
+    url = "https://github.com/hughjfchen/deploy-config";
+    rev = "994fcf8c57fdcc2b1c88f5c724ee7b7d09f48337";
+    # sha256 = "17kffymnv0fi6fwzc70ysv1w1ry99cq6h8440jv2x9hsd9vrzs3q";
+  }) {
+    pkgs = nPkgs;
+    modules = [
+      ../config/site/${site}/phase/${phase}/db.nix
+      ../config/site/${site}/phase/${phase}/db-gw.nix
+      ../config/site/${site}/phase/${phase}/api-gw.nix
+      ../config/site/${site}/phase/${phase}/messaging.nix
+      ../config/site/${site}/phase/${phase}/runner.nix
+    ];
+    env = my-openresty-env;
+  }).config;
 
   # the frontend, comment out for now.
   my-frontend-distributable =
@@ -178,7 +204,7 @@ in rec {
 
   mk-my-openresty-service-systemd-unsetup-or-bin-sh =
     if my-openresty-env.api-gw.isSystemdService then
-      (release-utils.unsetup-systemd-service {
+      (deploy-packer.unsetup-systemd-service {
         namespace = pkgName;
         units = serviceNameUnit;
       })
@@ -196,19 +222,19 @@ in rec {
 
   mk-my-openresty-reference =
     nPkgs.writeReferencesToFile setup-and-unsetup-or-bin-sh;
-  mk-my-openresty-deploy-sh = release-utils.mk-deploy-sh {
+  mk-my-openresty-deploy-sh = deploy-packer.mk-deploy-sh {
     env = my-openresty-env.api-gw;
     payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "openresty";
   };
-  mk-my-openresty-cleanup-sh = release-utils.mk-cleanup-sh {
+  mk-my-openresty-cleanup-sh = deploy-packer.mk-cleanup-sh {
     env = my-openresty-env.api-gw;
     payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "openresty";
   };
-  mk-my-release-packer = release-utils.mk-release-packer {
+  mk-my-release-packer = deploy-packer.mk-release-packer {
     referencePath = mk-my-openresty-reference;
     component = pkgName;
     inherit site phase innerTarballName;
