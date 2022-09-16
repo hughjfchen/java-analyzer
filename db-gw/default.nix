@@ -24,4 +24,6 @@ in rec {
   # nativePkgs.lib.recurseIntoAttrs, just a bit more explicilty.
   recurseForDerivations = true;
 
+  postgrest = pkgs.haskellPackages.postgrest;
+
 }
