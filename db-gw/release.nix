@@ -69,7 +69,7 @@ let
   # my services dependencies
   my-postgrest-bin-sh = nPkgs.writeShellApplication {
     name = lib.concatStringsSep "-" [ pkgName "bin" "sh" ];
-    runtimeInputs = [ sPkgs.haskellPackages.postgrest ];
+    runtimeInputs = [ sPkgs.pkgs.haskellPackages.postgrest ];
     text = ''
       postgrest ${my-postgrest-config-kv} "$@"
     '';
