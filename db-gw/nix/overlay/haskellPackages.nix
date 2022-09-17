@@ -9,6 +9,7 @@ prev.haskellPackages.override {
     postgrest = prevHP.postgrest.overrideAttrs (old: {
       configureFlags = (if prev.stdenv.hostPlatform.isMusl then
         old.configureFlags ++ [
+          "--enable-executable-static"
           "--ghc-option=-optl=-lssl"
           "--ghc-option=-optl=-lcrypto"
           "--ghc-option=-optl=-L${prev.openssl.out}/lib"
