@@ -24,7 +24,7 @@ in rec {
   # nativePkgs.lib.recurseIntoAttrs, just a bit more explicilty.
   recurseForDerivations = true;
 
-  my-postgrest = pkgs.haskell-nix.hackage-package {
+  postgrest = pkgs.haskell-nix.hackage-package {
     name = "postgrest";
     version = "7.0.1";
     index-state = pkgs.haskell-nix.internalHackageIndexState;
@@ -32,5 +32,5 @@ in rec {
     modules = customModules;
   };
 
-  my-postgrest-exe = my-postgrest.components.exes.postgrest;
+  postgrest-exe = postgrest.components.exes.postgrest;
 }

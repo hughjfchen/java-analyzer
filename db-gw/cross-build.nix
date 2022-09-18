@@ -5,27 +5,25 @@ defaultPlatformProject.pkgs.lib.mapAttrs (_: pkgs: rec {
   # nativePkgs.lib.recurseIntoAttrs, just a bit more explicilty.
   recurseForDerivations = true;
 
-  myPostgrest = import ./default.nix {
+  postgrest = import ./default.nix {
     nativePkgs = pkgs;
-    customModules = [{ packages.my-postgrest.dontStrip = false; }]
-      ++ (if pkgs.stdenv.hostPlatform.isMusl then [
-        # following customization is to build fully static binary for project using postgresql-libpq
-        {
-          packages.postgresql-libpq.flags.use-pkg-config = true;
-        }
-        # The order of -lssl and -lcrypto is important here
-        {
-          packages.my-postgrest.configureFlags = [
-            "--ghc-option=-optl=-lssl"
-            "--ghc-option=-optl=-lcrypto"
-            "--ghc-option=-optl=-L${pkgs.openssl.out}/lib"
-            "--ghc-option=-optl=-lpgcommon"
-            "--ghc-option=-optl=-lpgport"
-            "--ghc-option=-optl=-L${pkgs.postgresql.out}/lib"
-          ];
-        }
-      ] else
-        [ ]);
+    customModules = [{ packages.postgrest.dontStrip = false; }] ++ [
+      # following customization is to build fully static binary for project using postgresql-libpq
+      {
+        packages.postgresql-libpq.flags.use-pkg-config = true;
+      }
+      # The order of -lssl and -lcrypto is important here
+      {
+        packages.postgrest.configureFlags = [
+          "--ghc-option=-optl=-lssl"
+          "--ghc-option=-optl=-lcrypto"
+          "--ghc-option=-optl=-L${pkgs.openssl.out}/lib"
+          "--ghc-option=-optl=-lpgcommon"
+          "--ghc-option=-optl=-lpgport"
+          "--ghc-option=-optl=-L${pkgs.postgresql.out}/lib"
+        ];
+      }
+    ];
   };
 
 }) toBuild
