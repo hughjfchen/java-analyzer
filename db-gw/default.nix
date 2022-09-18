@@ -24,4 +24,12 @@ in rec {
   # nativePkgs.lib.recurseIntoAttrs, just a bit more explicilty.
   recurseForDerivations = true;
 
+  my-postgrest = pkgs.haskell-nix.hackage-package {
+    name = "postgrest";
+    version = "7.0.1";
+    compiler-nix-name = "ghc8107";
+    index-state = "2021-07-18T00:00:00Z";
+  };
+
+  my-postgrest-exe = my-postgrest.components.exes.postgrest;
 }
