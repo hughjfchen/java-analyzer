@@ -4,7 +4,7 @@
   config = {
     db = rec {
       hostName = "localhost";
-      dnsName = "";
+      dnsName = "localhost";
       ipAddress = "127.0.0.1";
       processUser = "jadbuser";
       isSystemdService = true;
