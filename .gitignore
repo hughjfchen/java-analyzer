@@ -58,3 +58,7 @@ result-*
 # nodejs
 node_modules
 build
+
+# build artifact for collect-java-dump project
+mk-my-release-packer
+my-*-dist*
