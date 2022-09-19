@@ -177,8 +177,10 @@ let
   };
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
-  serviceNameUnit =
-    lib.attrsets.setAttrByPath [ serviceNameKey ] mk-my-openresty-service-unit;
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] {
+    path = mk-my-openresty-service-unit;
+    wanted-by = [ "multi-user.target" ];
+  };
 
   mk-my-openresty-service-unit = nPkgs.writeText serviceNameKey
     (lib.attrsets.getAttrFromPath [

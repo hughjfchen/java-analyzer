@@ -103,8 +103,10 @@ let
     };
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
-  serviceNameUnit =
-    lib.attrsets.setAttrByPath [ serviceNameKey ] mk-my-postgrest-service-unit;
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] {
+    path = mk-my-postgrest-service-unit;
+    wanted-by = [ "multi-user.target" ];
+  };
 
   mk-my-postgrest-service-unit = nPkgs.writeText serviceNameKey
     (lib.attrsets.getAttrFromPath [

@@ -107,8 +107,10 @@ let
   };
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
-  serviceNameUnit =
-    lib.attrsets.setAttrByPath [ serviceNameKey ] mk-my-runner-service-unit;
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] {
+    path = mk-my-runner-service-unit;
+    wanted-by = [ "multi-user.target" ];
+  };
 
   mk-my-runner-service-unit = nPkgs.writeText serviceNameKey
     (lib.attrsets.getAttrFromPath [

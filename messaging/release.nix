@@ -106,8 +106,10 @@ let
   })).config.systemd.units."rabbitmq.service".unit;
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
-  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ]
-    (mk-my-rabbitmq-service-unit + /rabbitmq.service);
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] {
+    path = (mk-my-rabbitmq-service-unit + /rabbitmq.service);
+    wanted-by = [ "multi-user.target" ];
+  };
 in rec {
   inherit nativePkgs pkgs my-messaging-config;
 

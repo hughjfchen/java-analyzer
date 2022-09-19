@@ -114,8 +114,10 @@ let
   })).config.systemd.units."postgresql.service".unit;
 
   serviceNameKey = lib.concatStringsSep "." [ pkgName "service" ];
-  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ]
-    (mk-my-postgresql-service-unit + /postgresql.service);
+  serviceNameUnit = lib.attrsets.setAttrByPath [ serviceNameKey ] {
+    path = (mk-my-postgresql-service-unit + /postgresql.service);
+    wanted-by = [ "multi-user.target" ];
+  };
 in rec {
   inherit nativePkgs pkgs my-db-config;
 
