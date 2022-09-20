@@ -18,7 +18,7 @@ let
   # define some utility function for release packing ( code adapted from setup-systemd-units.nix )
   deploy-packer = import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-packer";
-    rev = "5b0eba7e6e9302a32b5b29bfbea022a2c400ac22";
+    rev = "ea6f100bba21a5ad9a9c4bce5376adc8aac5e1e3";
     # sha256 = "0r4y9nvmjkx7xf79m2i8qyrs7gp188adkfggg1p1q8vxfv0y4ilj";
   }) {
     inherit lib;
