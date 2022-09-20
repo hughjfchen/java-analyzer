@@ -7,7 +7,8 @@ defaultPlatformProject.pkgs.lib.mapAttrs (_: pkgs: rec {
 
   postgrest = import ./default.nix {
     nativePkgs = pkgs;
-    customModules = [{ packages.postgrest.dontStrip = false; }] ++ [
+    # customModules = [{ packages.postgrest.dontStrip = false; }] ++ [
+    customModules = [
       # following customization is to build fully static binary for project using postgresql-libpq
       {
         packages.postgresql-libpq.flags.use-pkg-config = true;
