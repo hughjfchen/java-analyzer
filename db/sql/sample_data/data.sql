@@ -15,6 +15,8 @@ COPY :data_schema.user (id,name,email,"password") FROM STDIN (FREEZE ON);
 1	test1	test1@test1.com	pass1111
 2	test2	test2@test2.com	pass2222
 3	test3	test3@test3.com	pass3333
+4	jaoperator	jaoperator@jaoperator.com	jaoperatorpass
+5	jaadmin	jaadmin@jaadmin.com	jaadminpass
 \.
 
 -- restart sequences
