@@ -7,7 +7,7 @@
       dnsName = "localhost";
       ipAddress = "127.0.0.1";
       processUser = "jarunneruser";
-      isSystemdService = false;
+      isSystemdService = true;
       runDir = "/var/${processUser}/run";
       dataDir = "/var/${processUser}/data";
     };
