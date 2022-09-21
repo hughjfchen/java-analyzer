@@ -99,6 +99,7 @@ let
         serviceConfig = {
           Type = "forking";
           User = "${my-runner-env.runner.processUser}";
+          Group = "${my-runner-env.runner.processUser}";
           ExecStart =
             "${my-runner-bin-sh}/bin/${my-runner-bin-sh.name} --command=Start";
           ExecStop =
