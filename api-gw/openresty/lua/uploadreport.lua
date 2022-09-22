@@ -157,7 +157,9 @@ while true do
 	   report_path=file_without_ext..'/index.html'
 	end
         local file_uri = string.gsub(report_path, my_my_upload_home, '')
-	local download_url = ngx.var.scheme.."://"..ngx.var.http_host..file_uri
+	-- local download_url = ngx.var.scheme.."://"..ngx.var.http_host..file_uri
+    -- we may not need the host part for the download url.
+	local download_url = file_uri
 	local report_create_req = { job_id = kv_part["job_id"]
 	                          -- , created_at = kv_part["created_at"]
 				  -- , updated_at = kv_part["updated_at"] -- use now() instead the old update time.
