@@ -67,6 +67,8 @@ let
     # list the runtime dependencies, especially those cannot be determined by nix automatically
     nPkgs.wget
     nPkgs.curl
+    nPkgs.gnutar
+    nPkgs.gzip
     nPkgs.xvfb-run
     nPkgs.jdk11
     nPkgs.eclipse-mat
