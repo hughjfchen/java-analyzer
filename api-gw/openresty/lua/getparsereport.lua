@@ -13,8 +13,6 @@ if req_json then
 		{"/rest/jobs?id=eq."..job_id}
 		, { "/rest/parsereports?id=eq."..job_id}
 	})
-	ngx.log(ngx.INFO, job_query_res.body)
-	ngx.log(ngx.INFO, parsereport_query_res.body)
 	if job_query_res.body ~= "[]" then
             ngx.status = job_query_res.status
             ngx.header["Content-Type"] = job_query_res.header["Content-Type"]
