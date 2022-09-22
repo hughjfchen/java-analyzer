@@ -131,11 +131,14 @@ let
       # create runtime dirs
 
       # for log dir
-      [ ! -d ${my-openresty-config.api-gw.logDir} ] && mkdir -p ${my-openresty-config.api-gw.logDir} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.logDir}
+      [ ! -d ${my-openresty-config.api-gw.logDir} ] && mkdir -p ${my-openresty-config.api-gw.logDir}
+      chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.logDir}
       # for cache dir
-      [ ! -d ${my-openresty-config.api-gw.cacheDir} ] && mkdir -p ${my-openresty-config.api-gw.cacheDir} && chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.cacheDir}
+      [ ! -d ${my-openresty-config.api-gw.cacheDir} ] && mkdir -p ${my-openresty-config.api-gw.cacheDir}
+      chown -R ${my-openresty-env.api-gw.processUser}:${my-openresty-env.api-gw.processUser} ${my-openresty-config.api-gw.cacheDir}
       # for upload files, the owner of this directory must be nobody
-      [ ! -d ${my-openresty-config.api-gw.uploadHome} ] && mkdir -p ${my-openresty-config.api-gw.uploadHome} && chown -R nobody:nogroup ${my-openresty-config.api-gw.uploadHome}
+      [ ! -d ${my-openresty-config.api-gw.uploadHome} ] && mkdir -p ${my-openresty-config.api-gw.uploadHome}
+      chown -R nobody:nogroup ${my-openresty-config.api-gw.uploadHome}
       # shellcheck source=/dev/null
       . ${my-openresty-src}/env.export
       openresty -p "${my-openresty-src}/nginx" -c "${my-openresty-src}/nginx/conf/nginx.conf" "$@"
