@@ -105,8 +105,8 @@ let
           Group = "${my-runner-env.runner.processUser}";
           ExecStart =
             "${my-runner-bin-sh}/bin/${my-runner-bin-sh.name} --command=Start";
-          ExecStop =
-            "${my-runner-bin-sh}/bin/${my-runner-bin-sh.name} --command=Stop";
+          # ExecStop =
+          #   "${my-runner-bin-sh}/bin/${my-runner-bin-sh.name} --command=Stop";
           Restart = "on-failure";
         };
       });
