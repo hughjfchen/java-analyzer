@@ -101,6 +101,8 @@ let
         description = "${pkgName} service";
         serviceConfig = {
           Type = "forking";
+          # for forking type service, better to specify the pid file
+          PIDFile = "${my-runner-env.runner.runDir}/my-job-runner.pid";
           User = "${my-runner-env.runner.processUser}";
           Group = "${my-runner-env.runner.processUser}";
           ExecStart =
