@@ -149,7 +149,7 @@ while true do
 	    local download_url = ngx.var.scheme.."://"..ngx.var.http_host..file_uri
 	    local job_create_payload = {tag=kv_part["parsetype"], contents={tag='HttpUrl', contents=download_url}}
 	    local job_create_req = {status='queued', payload=job_create_payload}
-	    ngx.log(ngx.INFO, cjson.encode(job_create_req))
+	    -- ngx.log(ngx.INFO, cjson.encode(job_create_req))
 	    ngx.req.set_header("Content-Type", "application/json")
 	    ngx.req.set_header("Accept", "application/json")
 	    ngx.req.set_header("Prefer", "return=headers-only")

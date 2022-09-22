@@ -169,7 +169,7 @@ while true do
 				  -- , locked_at = kv_part["locked_at"]
 				  -- , locked_by = kv_part["locked_by"]
 				  }
-	ngx.log(ngx.INFO, cjson.encode(report_create_req))
+	-- ngx.log(ngx.INFO, cjson.encode(report_create_req))
 	ngx.req.set_header("Content-Type", "application/json")
 	ngx.req.set_header("Accept", "application/json")
 	-- ngx.req.set_header("Prefer", "return=headers-only")

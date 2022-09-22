@@ -10,7 +10,7 @@ if ngx.req.get_method() == "POST" then
   if body_json then
     local job_create_payload = {tag=body_json["parsetype"], contents={tag='HttpUrl', contents=body_json["dumpurl"]}}
     local job_create_req = {status='queued', payload=job_create_payload}
-    ngx.log(ngx.INFO, cjson.encode(job_create_req))
+    -- ngx.log(ngx.INFO, cjson.encode(job_create_req))
     ngx.req.set_header("Content-Type", "application/json")
     ngx.req.set_header("Accept", "application/json")
     -- ngx.req.set_header("Prefer", "return=headers-only")
