@@ -69,6 +69,7 @@ let
     nPkgs.curl
     nPkgs.gnutar
     nPkgs.gzip
+    nPkgs.ps
     nPkgs.xvfb-run
     nPkgs.jdk11
     nPkgs.eclipse-mat
