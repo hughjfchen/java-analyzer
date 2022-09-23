@@ -230,7 +230,8 @@ in rec {
 
   # following override the deploy script to add a tmpfiles
   # config for the system tmpfiles service to clean up
-  # the upload dumpfiles after 24h
+  # the upload dumpfiles each time when systemd-tmpfiles-clean
+  # runs. (by default, there is a timer trigger that every 24h)
   mk-my-openresty-deploy-sh = (deploy-packer.mk-deploy-sh {
     env = my-openresty-env.api-gw;
     payloadPath = setup-and-unsetup-or-bin-sh;
@@ -238,7 +239,7 @@ in rec {
     execName = "openresty";
   }).overrideAttrs (old: {
     text = old.text + "\n" + ''
-      [[ -d /etc/tmpfiles.d ]] && sudo echo "e ${my-openresty-config.api-gw.uploadHome}/dumpfiles - - - 1h" > /etc/tmpfiles.d/jadumpfilesclean.conf
+      [[ -d /etc/tmpfiles.d ]] && sudo echo "e ${my-openresty-config.api-gw.uploadHome}/dumpfiles 0777 nobody nogroup 23h" > /etc/tmpfiles.d/jadumpfilesclean.conf
       sudo systemctl restart systemd-tmpfiles-clean.service
     '';
   });
