@@ -227,18 +227,31 @@ in rec {
 
   mk-my-openresty-reference =
     nPkgs.writeReferencesToFile setup-and-unsetup-or-bin-sh;
-  mk-my-openresty-deploy-sh = deploy-packer.mk-deploy-sh {
+
+  # following override the deploy script to add a tmpfiles
+  # config for the system tmpfiles service to clean up
+  # the upload dumpfiles after 24h
+  mk-my-openresty-deploy-sh = (deploy-packer.mk-deploy-sh {
     env = my-openresty-env.api-gw;
     payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "openresty";
-  };
-  mk-my-openresty-cleanup-sh = deploy-packer.mk-cleanup-sh {
+  }).overrideAttrs (old: {
+    text = old.text + "\n" + ''
+      [[ -d /etc/tmpfiles.d ]] && sudo echo "e ${my-openresty-config.api-gw.uploadHome}/dumpfiles - - - 1h" > /etc/tmpfiles.d/jadumpfilesclean.conf
+      sudo systemctl restart systemd-tmpfiles-clean.service
+    '';
+  });
+  mk-my-openresty-cleanup-sh = (deploy-packer.mk-cleanup-sh {
     env = my-openresty-env.api-gw;
     payloadPath = setup-and-unsetup-or-bin-sh;
     inherit innerTarballName;
     execName = "openresty";
-  };
+  }).overrideAttrs (old: {
+    text = old.text + "\n" + ''
+      sudo rm -fr /etc/tmpfiles.d/jadumpfilesclean.conf
+    '';
+  });
   mk-my-release-packer = deploy-packer.mk-release-packer {
     referencePath = mk-my-openresty-reference;
     component = pkgName;
