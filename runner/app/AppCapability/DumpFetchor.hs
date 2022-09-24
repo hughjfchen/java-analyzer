@@ -11,7 +11,7 @@ import As
 import Capability.DumpFetchor
 import Core.JavaAnalyzerRunner
 import Core.MyError
-import Core.Types (CurlCmdLineOptions' (curlCmdLineDownloadBaseUrl'))
+import Core.Types
 import Error
 import Has
 import Path
