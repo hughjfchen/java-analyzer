@@ -50,7 +50,7 @@ let
   # the config
   my-db-config = (import (builtins.fetchGit {
     url = "https://github.com/hughjfchen/deploy-config";
-    rev = "994fcf8c57fdcc2b1c88f5c724ee7b7d09f48337";
+    rev = "224af9fd5793c26476a1fed0f681627d679faaad";
     # sha256 = "17kffymnv0fi6fwzc70ysv1w1ry99cq6h8440jv2x9hsd9vrzs3q";
   }) {
     pkgs = nPkgs;
