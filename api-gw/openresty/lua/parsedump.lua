@@ -146,7 +146,10 @@ while true do
 	    ngx.say("No file uploaded, if you're using curl command, you should make sure put a @ symbol before the file name.")
         else
             local file_uri = string.gsub(file_name, my_my_upload_home, '')
-	    local download_url = ngx.var.scheme.."://"..ngx.var.http_host..file_uri
+	    -- local download_url = ngx.var.scheme.."://"..ngx.var.http_host..file_uri
+        -- better not include the host part for the download_uri
+        -- instead should let the host part configurable
+	    local download_url = file_uri
 	    local job_create_payload = {tag=kv_part["parsetype"], contents={tag='HttpUrl', contents=download_url}}
 	    local job_create_req = {status='queued', payload=job_create_payload}
 	    -- ngx.log(ngx.INFO, cjson.encode(job_create_req))

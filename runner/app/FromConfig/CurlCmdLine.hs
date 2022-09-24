@@ -1,3 +1,6 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 -- |
 -- Copyright: (c) 2021 Hugh JF Chen
 -- License: MIT
@@ -6,32 +9,32 @@
 -- Portability: portable
 --
 -- FromConfig instance for CurlCmdLineOptions
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE RecordWildCards #-}
 module FromConfig.CurlCmdLine () where
 
 import Conferer.FromConfig
-
+import Core.Types (CurlCmdLineOptions (..))
 import Data.Dynamic
-
-import Core.Types (CurlCmdLineOptions(..))
 
 -- | Deconstruct a 'Core.Types.MATCmdLineOptions' into a many key/dynamic pairs to
 -- provide valid defaults for downstream 'fetchFromConfig'
 deconstructCurlCmdLineOptionsToDefaults :: CurlCmdLineOptions -> [(Key, Dynamic)]
-deconstructCurlCmdLineOptionsToDefaults CurlCmdLineOptions{..} =
-  [ ("loginUser", toDyn curlCmdLineLoginUser)
-  , ("loginPIN", toDyn curlCmdLineLoginPIN)
-  , ("loginUrl", toDyn curlCmdLineLoginUrl)
-  , ("uploadUrl", toDyn curlCmdLineUploadUrl)
+deconstructCurlCmdLineOptionsToDefaults CurlCmdLineOptions {..} =
+  [ ("loginUser", toDyn curlCmdLineLoginUser),
+    ("loginPIN", toDyn curlCmdLineLoginPIN),
+    ("loginUrl", toDyn curlCmdLineLoginUrl),
+    ("uploadUrl", toDyn curlCmdLineUploadUrl),
+    ("downloadBaseUrl", toDyn curlCmdLineDownloadBaseUrl)
   ]
 
 instance DefaultConfig CurlCmdLineOptions where
-  configDef = CurlCmdLineOptions { curlCmdLineLoginUser = ""
-                                 , curlCmdLineLoginPIN = ""
-                                 , curlCmdLineLoginUrl = ""
-                                 , curlCmdLineUploadUrl = ""
-                       }
+  configDef =
+    CurlCmdLineOptions
+      { curlCmdLineLoginUser = "",
+        curlCmdLineLoginPIN = "",
+        curlCmdLineLoginUrl = "",
+        curlCmdLineUploadUrl = "",
+        curlCmdLineDownloadBaseUrl = ""
+      }
 
 instance FromConfig CurlCmdLineOptions where
   fromConfig key originalConfig = do
@@ -41,5 +44,6 @@ instance FromConfig CurlCmdLineOptions where
     curlCmdLineLoginPIN <- fetchFromConfig (key /. "loginPIN") config
     curlCmdLineLoginUrl <- fetchFromConfig (key /. "loginUrl") config
     curlCmdLineUploadUrl <- fetchFromConfig (key /. "uploadUrl") config
+    curlCmdLineDownloadBaseUrl <- fetchFromConfig (key /. "downloadBaseUrl") config
 
-    pure CurlCmdLineOptions{..}
+    pure CurlCmdLineOptions {..}

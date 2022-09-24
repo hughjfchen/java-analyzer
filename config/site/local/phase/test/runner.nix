@@ -75,6 +75,10 @@
       "curlcmdlineoptions.uploadurl" = "http://${config.api-gw.serverName}:${
           toString config.api-gw.listenPort
         }/uploadreport";
+      "curlcmdlineoptions.downloadbaseurl" =
+        "http://${config.api-gw.serverName}:${
+          toString config.api-gw.listenPort
+        }/";
     };
   };
 }

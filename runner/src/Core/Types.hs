@@ -1,44 +1,43 @@
 -- | This module defines the core domain types which shared by lib and exe
-module Core.Types (
-  Location (..),
-  Location' (..),
-  Report (..),
-  MyJob (..),
-  CommandPath (..),
-  CommandPath' (..),
-  OutputPath (..),
-  OutputPath' (..),
-  JCACmdLineOptions (..),
-  JCACmdLineOptions' (..),
-  MATCmdLineOptions (..),
-  MATCmdLineOptions' (..),
-  GCMVCmdLineOptions (..),
-  GCMVCmdLineOptions' (..),
-  CurlCmdLineOptions (..),
-  CurlCmdLineOptions' (..),
-  flowIn,
-  flowOut,
-  commandPathConfigIn,
-  outputPathConfigIn,
-  jcaCmdLineOptionsConfigIn,
-  matCmdLineOptionsConfigIn,
-  curlCmdLineOptionsConfigIn,
-  gcmvCmdLineOptionsConfigIn,
-  JavaAnalyzerRunner (..),
-) where
+module Core.Types
+  ( Location (..),
+    Location' (..),
+    Report (..),
+    MyJob (..),
+    CommandPath (..),
+    CommandPath' (..),
+    OutputPath (..),
+    OutputPath' (..),
+    JCACmdLineOptions (..),
+    JCACmdLineOptions' (..),
+    MATCmdLineOptions (..),
+    MATCmdLineOptions' (..),
+    GCMVCmdLineOptions (..),
+    GCMVCmdLineOptions' (..),
+    CurlCmdLineOptions (..),
+    CurlCmdLineOptions' (..),
+    flowIn,
+    flowOut,
+    commandPathConfigIn,
+    outputPathConfigIn,
+    jcaCmdLineOptionsConfigIn,
+    matCmdLineOptionsConfigIn,
+    curlCmdLineOptionsConfigIn,
+    gcmvCmdLineOptionsConfigIn,
+    JavaAnalyzerRunner (..),
+  )
+where
 
+import As
 import Control.Monad.Catch
+import Core.MyError
 import Data.Aeson (FromJSON, ToJSON)
+import Data.Password.Types
+import Data.Password.Validate
+import Error
 import Path.Posix (Abs, Dir, File, Path, SomeBase, fromSomeFile, parseSomeDir, parseSomeFile)
 import Text.URI (URI (..))
 import qualified Text.URI as URI
-
-import Data.Password.Types
-import Data.Password.Validate
-
-import As
-import Core.MyError
-import Error
 
 data Location
   = Local FilePath
@@ -46,6 +45,7 @@ data Location
   | S3Path !Text
   deriving stock (Eq, Ord, Show, Typeable, Generic)
   deriving anyclass (FromJSON, ToJSON)
+
 data Location'
   = Local' (SomeBase File)
   | HttpUrl' !URI
@@ -73,24 +73,24 @@ data MyJob
   deriving anyclass (FromJSON, ToJSON)
 
 data CommandPath = CommandPath
-  { cmdXvfbPath :: !FilePath
-  , cmdWgetPath :: !FilePath
-  , cmdCurlPath :: !FilePath
-  , cmdJavaPath :: !FilePath
-  , cmdParseDumpShPath :: !FilePath
-  , cmdJCAPath :: !FilePath
-  , cmdGCMVPath :: !FilePath
+  { cmdXvfbPath :: !FilePath,
+    cmdWgetPath :: !FilePath,
+    cmdCurlPath :: !FilePath,
+    cmdJavaPath :: !FilePath,
+    cmdParseDumpShPath :: !FilePath,
+    cmdJCAPath :: !FilePath,
+    cmdGCMVPath :: !FilePath
   }
   deriving stock (Eq, Ord, Show, Typeable, Generic)
 
 data CommandPath' = CommandPath'
-  { cmdXvfbPath' :: SomeBase File
-  , cmdWgetPath' :: SomeBase File
-  , cmdCurlPath' :: SomeBase File
-  , cmdJavaPath' :: SomeBase File
-  , cmdParseDumpShPath' :: SomeBase File
-  , cmdJCAPath' :: SomeBase File
-  , cmdGCMVPath' :: SomeBase File
+  { cmdXvfbPath' :: SomeBase File,
+    cmdWgetPath' :: SomeBase File,
+    cmdCurlPath' :: SomeBase File,
+    cmdJavaPath' :: SomeBase File,
+    cmdParseDumpShPath' :: SomeBase File,
+    cmdJCAPath' :: SomeBase File,
+    cmdGCMVPath' :: SomeBase File
   }
   deriving stock (Eq, Ord, Show, Typeable, Generic)
 
@@ -105,40 +105,40 @@ commandPathConfigIn CommandPath {..} = do
   gcmv' <- parseSomeFile cmdGCMVPath
   pure $
     CommandPath'
-      { cmdXvfbPath' = xvfb'
-      , cmdWgetPath' = wget'
-      , cmdCurlPath' = curl'
-      , cmdJavaPath' = java'
-      , cmdParseDumpShPath' = parseDump'
-      , cmdJCAPath' = jca'
-      , cmdGCMVPath' = gcmv'
+      { cmdXvfbPath' = xvfb',
+        cmdWgetPath' = wget',
+        cmdCurlPath' = curl',
+        cmdJavaPath' = java',
+        cmdParseDumpShPath' = parseDump',
+        cmdJCAPath' = jca',
+        cmdGCMVPath' = gcmv'
       }
 
 data OutputPath = OutputPath
-  { outputFetchedDumpHome :: !FilePath
-  , outputJCAPreProcessorHome :: !FilePath
-  , outputMATPreProcessorHome :: !FilePath
-  , outputGCMVPreProcessorHome :: !FilePath
-  , outputJCAReportHome :: !FilePath
-  , outputMATReportHome :: !FilePath
-  , outputGCMVReportHome :: !FilePath
-  , outputJCAPostProcessorHome :: !FilePath
-  , outputMATPostProcessorHome :: !FilePath
-  , outputGCMVPostProcessorHome :: !FilePath
+  { outputFetchedDumpHome :: !FilePath,
+    outputJCAPreProcessorHome :: !FilePath,
+    outputMATPreProcessorHome :: !FilePath,
+    outputGCMVPreProcessorHome :: !FilePath,
+    outputJCAReportHome :: !FilePath,
+    outputMATReportHome :: !FilePath,
+    outputGCMVReportHome :: !FilePath,
+    outputJCAPostProcessorHome :: !FilePath,
+    outputMATPostProcessorHome :: !FilePath,
+    outputGCMVPostProcessorHome :: !FilePath
   }
   deriving stock (Eq, Ord, Show, Typeable, Generic)
 
 data OutputPath' = OutputPath'
-  { outputFetchedDumpHome' :: SomeBase Dir
-  , outputJCAPreProcessorHome' :: SomeBase Dir
-  , outputMATPreProcessorHome' :: SomeBase Dir
-  , outputGCMVPreProcessorHome' :: SomeBase Dir
-  , outputJCAReportHome' :: SomeBase Dir
-  , outputMATReportHome' :: SomeBase Dir
-  , outputGCMVReportHome' :: SomeBase Dir
-  , outputJCAPostProcessorHome' :: SomeBase Dir
-  , outputMATPostProcessorHome' :: SomeBase Dir
-  , outputGCMVPostProcessorHome' :: SomeBase Dir
+  { outputFetchedDumpHome' :: SomeBase Dir,
+    outputJCAPreProcessorHome' :: SomeBase Dir,
+    outputMATPreProcessorHome' :: SomeBase Dir,
+    outputGCMVPreProcessorHome' :: SomeBase Dir,
+    outputJCAReportHome' :: SomeBase Dir,
+    outputMATReportHome' :: SomeBase Dir,
+    outputGCMVReportHome' :: SomeBase Dir,
+    outputJCAPostProcessorHome' :: SomeBase Dir,
+    outputMATPostProcessorHome' :: SomeBase Dir,
+    outputGCMVPostProcessorHome' :: SomeBase Dir
   }
   deriving stock (Eq, Ord, Show, Typeable, Generic)
 
@@ -156,16 +156,16 @@ outputPathConfigIn OutputPath {..} = do
   gcmvPostProcessHome' <- parseSomeDir outputMATPostProcessorHome
   pure $
     OutputPath'
-      { outputFetchedDumpHome' = fetchedDumpHome'
-      , outputJCAPreProcessorHome' = jcaPreProcessHome'
-      , outputMATPreProcessorHome' = matPreProcessHome'
-      , outputGCMVPreProcessorHome' = gcmvPreProcessHome'
-      , outputJCAReportHome' = jcaReportHome'
-      , outputMATReportHome' = matReportHome'
-      , outputGCMVReportHome' = gcmvReportHome'
-      , outputJCAPostProcessorHome' = jcaPostProcessHome'
-      , outputMATPostProcessorHome' = matPostProcessHome'
-      , outputGCMVPostProcessorHome' = gcmvPostProcessHome'
+      { outputFetchedDumpHome' = fetchedDumpHome',
+        outputJCAPreProcessorHome' = jcaPreProcessHome',
+        outputMATPreProcessorHome' = matPreProcessHome',
+        outputGCMVPreProcessorHome' = gcmvPreProcessHome',
+        outputJCAReportHome' = jcaReportHome',
+        outputMATReportHome' = matReportHome',
+        outputGCMVReportHome' = gcmvReportHome',
+        outputJCAPostProcessorHome' = jcaPostProcessHome',
+        outputMATPostProcessorHome' = matPostProcessHome',
+        outputGCMVPostProcessorHome' = gcmvPostProcessHome'
       }
 
 data JCACmdLineOptions = JCACmdLineOptions {jcaCmdLineXmx :: !Text}
@@ -187,8 +187,10 @@ jcaCmdLineOptionsConfigIn JCACmdLineOptions {..} = do
 
 data MATCmdLineOptions = MATCmdLineOptions {matCmdLineXmx :: !Text}
   deriving stock (Eq, Ord, Show, Typeable, Generic)
+
 data MATCmdLineOptions' = MATCmdLineOptions' {matCmdLineXmx' :: !Int}
   deriving stock (Eq, Ord, Show, Typeable, Generic)
+
 matCmdLineOptionsConfigIn ::
   (WithError err m, As err MyError) => MATCmdLineOptions -> m MATCmdLineOptions'
 matCmdLineOptionsConfigIn MATCmdLineOptions {..} = do
@@ -201,17 +203,19 @@ matCmdLineOptionsConfigIn MATCmdLineOptions {..} = do
     Just v -> pure $ MATCmdLineOptions' {matCmdLineXmx' = v}
 
 data GCMVCmdLineOptions = GCMVCmdLineOptions
-  { gcmvCmdLineXmx :: !Text
-  , gcmvJVMPath :: !FilePath
-  , gcmvPreference :: !FilePath
+  { gcmvCmdLineXmx :: !Text,
+    gcmvJVMPath :: !FilePath,
+    gcmvPreference :: !FilePath
   }
   deriving stock (Eq, Ord, Show, Typeable, Generic)
+
 data GCMVCmdLineOptions' = GCMVCmdLineOptions'
-  { gcmvCmdLineXmx' :: !Int
-  , gcmvJVMPath' :: SomeBase Dir
-  , gcmvPreference' :: SomeBase File
+  { gcmvCmdLineXmx' :: !Int,
+    gcmvJVMPath' :: SomeBase Dir,
+    gcmvPreference' :: SomeBase File
   }
   deriving stock (Eq, Ord, Show, Typeable, Generic)
+
 gcmvCmdLineOptionsConfigIn ::
   (WithError err m, As err MyError, MonadThrow m) => GCMVCmdLineOptions -> m GCMVCmdLineOptions'
 gcmvCmdLineOptionsConfigIn GCMVCmdLineOptions {..} = do
@@ -226,18 +230,20 @@ gcmvCmdLineOptionsConfigIn GCMVCmdLineOptions {..} = do
     Just v -> pure $ GCMVCmdLineOptions' {gcmvCmdLineXmx' = v, gcmvJVMPath' = gcmvJvm', gcmvPreference' = gcmvPref'}
 
 data CurlCmdLineOptions = CurlCmdLineOptions
-  { curlCmdLineLoginUser :: !Text
-  , curlCmdLineLoginPIN :: !Text
-  , curlCmdLineLoginUrl :: !Text
-  , curlCmdLineUploadUrl :: !Text
+  { curlCmdLineLoginUser :: !Text,
+    curlCmdLineLoginPIN :: !Text,
+    curlCmdLineLoginUrl :: !Text,
+    curlCmdLineUploadUrl :: !Text,
+    curlCmdLineDownloadBaseUrl :: !Text
   }
   deriving stock (Show, Typeable, Generic)
 
 data CurlCmdLineOptions' = CurlCmdLineOptions'
-  { curlCmdLineLoginUser' :: !Password
-  , curlCmdLineLoginPIN' :: !Password
-  , curlCmdLineLoginUrl' :: !URI
-  , curlCmdLineUploadUrl' :: !URI
+  { curlCmdLineLoginUser' :: !Password,
+    curlCmdLineLoginPIN' :: !Password,
+    curlCmdLineLoginUrl' :: !URI,
+    curlCmdLineUploadUrl' :: !URI,
+    curlCmdLineDownloadBaseUrl' :: !URI
   }
   deriving stock (Show, Typeable, Generic)
 
@@ -254,15 +260,17 @@ curlCmdLineOptionsConfigIn CurlCmdLineOptions {..} = do
           InvalidConfigParameters "The password from config is not valid. Maybe it is too short."
   loginUrl' <- URI.mkURI curlCmdLineLoginUrl
   uploadUrl' <- URI.mkURI curlCmdLineUploadUrl
+  downloadBaseUrl' <- URI.mkURI curlCmdLineDownloadBaseUrl
   pure $
     CurlCmdLineOptions'
-      { curlCmdLineLoginUser' = loginUser'
-      , curlCmdLineLoginPIN' = loginPIN'
-      , curlCmdLineLoginUrl' = loginUrl'
-      , curlCmdLineUploadUrl' = uploadUrl'
+      { curlCmdLineLoginUser' = loginUser',
+        curlCmdLineLoginPIN' = loginPIN',
+        curlCmdLineLoginUrl' = loginUrl',
+        curlCmdLineUploadUrl' = uploadUrl',
+        curlCmdLineDownloadBaseUrl' = downloadBaseUrl'
       }
 
 data JavaAnalyzerRunner = JavaAnalyzerRunner
-  { field1 :: !Int
-  , field2 :: !Text
+  { field1 :: !Int,
+    field2 :: !Text
   }
